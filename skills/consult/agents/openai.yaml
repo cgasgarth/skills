@@ -1,4 +1,0 @@
-interface:
-  display_name: "Consult"
-  short_description: "Consult ChatGPT Extended Pro from Codex"
-  default_prompt: "Use $consult to ask ChatGPT Extended Pro for a second opinion on this task."

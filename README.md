@@ -4,19 +4,14 @@ Personal Codex skills for `cgasgarth`.
 
 ## Included
 
+- `amazon-support-browser` - open and handle Amazon customer support chat in the user's active Chrome session.
 - `consult` - consult ChatGPT Pro Extended from Codex for an advisory second opinion.
 
-## Local Skill Inventory
+## Local Personal Skill Inventory
 
-If this repository were expanded to include every local skill currently installed in the local Codex skills directory, it would include:
+This repository now includes every non-system local skill currently installed in the local Codex skills directory:
 
 - `amazon-support-browser`
-- `chronicle`
 - `consult`
-- `.system/imagegen`
-- `.system/openai-docs`
-- `.system/plugin-creator`
-- `.system/skill-creator`
-- `.system/skill-installer`
 
-The local directory `codex-primary-runtime` is empty and does not contain a `SKILL.md`, so it is not listed as an included skill.
+Built-in Codex `.system/*` skills are intentionally omitted.
