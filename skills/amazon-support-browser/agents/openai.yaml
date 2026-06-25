@@ -1,0 +1,3 @@
+display_name: Amazon Support Browser
+short_description: Open Amazon support chat in active Chrome.
+default_prompt: Open Amazon customer support chat in my active Chrome session.
