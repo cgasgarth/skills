@@ -74,8 +74,9 @@ Use the visible page state as the authority:
 - If the composer already shows `Pro Extended`, proceed.
 - If the composer does not show `Pro Extended`, open the `Model selector` menu.
 - In the menu, choose `Pro`. In this UI, the menu item may open a submenu with `Pro Standard` and `Pro Extended`.
+- If only `Pro` is visible, hover or open the `Pro` row/submenu, then select `Pro Extended`.
 - Choose `Pro Extended`; do not choose `Pro Standard` for this skill.
-- After choosing `Pro Extended`, verify that the composer shows `Pro Extended`.
+- After choosing `Pro Extended`, verify that the composer button shows `Pro Extended` before sending.
 - If the menu exposes `Latest`, `Instant`, `Thinking`, `Pro`, and `Configure...`, do not choose `Instant` or `Thinking` for this skill.
 
 If the model cannot be switched to `Pro Extended`, tell the user what you observed and do not send the consultation unless the user explicitly approves using another model.
@@ -113,7 +114,7 @@ Workflow:
 - Confirm the correct repo from local context before attaching it. Use `git remote -v`, the workspace path, PR URL, issue URL, or the user's explicit repo name as evidence.
 - In ChatGPT's composer, click the plus sign (`Add files and more`).
 - In the opened menu, the visible options may be `Add photos & files`, `Create image`, `Web search`, and a search affordance labeled `Type to search plugins, files & skills`; GitHub may not appear until searched.
-- With the menu open, type `github` in the composer/search field. This should filter the menu to a `GitHub` row with the GitHub icon.
+- With the menu open, type `github` into the menu's `Type to search plugins, files & skills` search affordance, not as prompt text. This should filter the menu to a `GitHub` row with the GitHub icon.
 - Click the `GitHub` row/icon. The typed `github` text should be replaced by a GitHub source/context pill in the composer.
 - If GitHub is visible directly in the plus menu, selecting it directly is fine. In the ChatGPT mobile/narrow composer, GitHub may still be under `Add files and more` -> `More` -> `GitHub`; check the `More` submenu before deciding GitHub is unavailable. If GitHub is not available or requires account connection, tell the user and continue with the best available prompt context unless the user asks you to connect it.
 - Search or select the appropriate repository. What matters is that the selected repo is the correct project for the question.
@@ -126,6 +127,14 @@ In the consultation prompt, explicitly tell ChatGPT what repo context is attache
 ```text
 I attached the GitHub repository owner/name. Please inspect the current implementation around src/foo.ts and tests/foo.test.ts before recommending changes. The local branch is branch-name; the issue is #123.
 ```
+
+## GitHub Milestones And Issues
+
+When consult work is organized around GitHub milestones, create or confirm the required milestones before asking ChatGPT to create issues. ChatGPT can create GitHub issues and assign them to existing milestones, but do not assume it can create the milestones themselves.
+
+Pass the milestone titles and numbers into the consultation prompt, along with any labels, assignees, repository, scope, and sequencing constraints. Ask ChatGPT to directly create the GitHub issues under those existing milestones instead of only drafting issue text for Codex to create later.
+
+If a milestone cannot be created or confirmed from the available local or GitHub tools, tell ChatGPT that issue creation must wait for milestone IDs and ask for a milestone-to-issue plan rather than asking it to create issues immediately.
 
 ## Consultation Prompt
 
