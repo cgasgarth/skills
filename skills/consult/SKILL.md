@@ -136,6 +136,18 @@ Pass the milestone titles and numbers into the consultation prompt, along with a
 
 If a milestone cannot be created or confirmed from the available local or GitHub tools, tell ChatGPT that issue creation must wait for milestone IDs and ask for a milestone-to-issue plan rather than asking it to create issues immediately.
 
+For milestone backlog refinement, require ChatGPT to inspect the attached repository before writing or editing issues. The prompt should name the exact milestone, list the current issue numbers/titles, and ask ChatGPT to reference concrete files, components, package scripts, schemas, commands, and existing tests that are relevant to each issue. Generic product-manager issue text is not enough.
+
+Ask ChatGPT to make every issue PR-sized. If an issue would naturally take multiple PRs, ChatGPT should split it into multiple issues under the same milestone rather than leave an oversized catch-all issue. Each issue should include:
+
+- `Why`: the concrete product, quality, validation, or maintainability gap, with current code/test references.
+- `How`: an actionable implementation plan naming likely files, modules, APIs, UI surfaces, and sequencing.
+- `Validation`: exact local commands, expected runtime/UI/output proof, fixtures or RAW inputs when relevant, and what regression should fail if the implementation is broken.
+- `Acceptance`: observable completion criteria that distinguish schema/planning/probe-only progress from real runtime/product behavior.
+- `Scope`: what is intentionally out of scope for that single PR.
+
+When asking ChatGPT to create issues directly, tell it to use the existing milestone number, link related issues, close or mark obsolete duplicated/meta-only issues when appropriate, and preserve the RawEngine rule that proof scripts, schemas, and probes belong inside the actual feature PR rather than as standalone PRs.
+
 ## Consultation Prompt
 
 Send an outcome-first prompt. State the goal, success criteria, hard constraints, relevant evidence, and desired output shape.
