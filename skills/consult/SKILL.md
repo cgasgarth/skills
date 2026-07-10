@@ -23,6 +23,10 @@ Start a new ChatGPT thread for every new consultation topic. Do not reuse an exi
 
 Use the Codex Browser Use plugin's in-app browser workflow. Read and follow its `browser` skill before browser actions, then initialize the browser runtime with the `iab` backend through the Node REPL.
 
+### Composer layout
+
+Before preparing a consultation composer, ensure the browser has a usable desktop-width layout. If a narrow viewport hides or compresses the attachment picker, use the Browser viewport capability to set a desktop width (for example, 1440px) before interacting with the composer. Reset a temporary override when the consultation is finished unless the user asks to keep it.
+
 ## Hard Automation Boundary
 
 Open ChatGPT in the project that matches the task's repository, product, client, or domain. For repo work, derive the project from the workspace path, GitHub remote, PR/issue URL, or the user's explicit project name. For non-repo work, use the clearest product or domain named by the user.
@@ -30,6 +34,8 @@ Open ChatGPT in the project that matches the task's repository, product, client,
 If a matching ChatGPT project exists, start the consultation there using that project's `New chat in ...` composer so the session is filed under the relevant project. If no matching project exists, start the session under the generalized `consult` project instead.
 
 ### Mandatory setup order
+
+If the composer contains any pre-existing prompt text before the GitHub source pill is visibly attached, clear the text from the composer, verify it is empty, and then continue from step 2. Do not send or otherwise reuse the pre-existing draft.
 
 Complete consultation setup in this exact order:
 
@@ -79,9 +85,9 @@ GitHub attachment is mandatory; do not skip it because a question appears genera
 Workflow:
 
 - For every consultation, attach GitHub before model selection or entering any prompt text. Start with an empty project composer; do not type the question, `@GitHub`, a repository name, or a temporary placeholder first.
-- In ChatGPT's composer, click the plus sign (`Add files and more`).
-- In the opened menu, the visible options may be `Add photos & files`, `Create image`, `Web search`, and a search affordance labeled `Type to search plugins, files & skills`; GitHub may not appear until searched.
-- With the menu open, type `github` into the menu's `Type to search plugins, files & skills` search affordance, not as prompt text. This should filter the menu to a `GitHub` row with the GitHub icon.
+- In ChatGPT's composer, click the plus sign (`Add files and more`) before interacting with any attachment options.
+- With the picker open, type `github` in the active picker/composer input to reveal the GitHub source result. Do not send this temporary text as a prompt.
+- Click the resulting `GitHub` row with the GitHub icon; the temporary `github` text must be replaced by a GitHub source pill in the composer.
 - Click the `GitHub` row/icon. The typed `github` text must be replaced by a GitHub source pill in the composer.
 - A literal `@GitHub` mention in prompt text is not an attachment and does not satisfy this requirement.
 - If GitHub is visible directly in the plus menu, selecting it directly is fine. In the ChatGPT mobile/narrow composer, GitHub may still be under `Add files and more` -> `More` -> `GitHub`; check the `More` submenu before deciding GitHub is unavailable.
