@@ -1,5 +1,5 @@
-model = "gpt-5.5"
-model_reasoning_effort = "medium"
+model = "gpt-5.6-terra"
+model_reasoning_effort = "high"
 
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
@@ -8,8 +8,10 @@ personality = "pragmatic"
 
 
 
-notify = ["/Users/cgas/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
 approvals_reviewer = "user"
+service_tier = "default"
+
+notify = ["/Users/cgas/.codex/plugins/cache/openai-bundled/computer-use/1.0.1000366/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
 
 [projects."/Users/cgas/Documents/Projects/Atelier"]
 trust_level = "trusted"
@@ -326,6 +328,54 @@ trust_level = "trusted"
 [projects."/Users/cgas/Documents/Codex/2026-06-25/lo"]
 trust_level = "trusted"
 
+[projects."/Users/cgas/Documents/RawEngine/RapidRaw"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-06-28/is"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-06-29/this"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-06-29/upda"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-06-29/updat"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-06-29/i"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-06-30/un"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-06-30/how"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-07-05/aw"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-07-06/new-chat"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-07-07/new-chat"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-07-09/lo"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-07-09/w"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-07-09/in"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-07-09/run"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-07-09/consult-users-cgas-codex-skills-consult"]
+trust_level = "trusted"
+
 [notice]
 hide_full_access_warning = true
 suppress_unstable_features_warning = true
@@ -346,12 +396,12 @@ chronicle = false
 js_repl = false
 
 [marketplaces.openai-bundled]
-last_updated = "2026-06-25T18:56:29Z"
+last_updated = "2026-07-10T02:20:35Z"
 source_type = "local"
 source = "/Users/cgas/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-06-24T06:03:36Z"
+last_updated = "2026-07-10T02:02:44Z"
 source_type = "local"
 source = "/Users/cgas/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
@@ -387,13 +437,19 @@ enabled = true
 [plugins."pdf@openai-primary-runtime"]
 enabled = true
 
-[plugins."browser@openai-bundled"]
+[plugins."template-creator@openai-primary-runtime"]
 enabled = true
 
 [plugins."chrome@openai-bundled"]
 enabled = true
 
-[plugins."template-creator@openai-primary-runtime"]
+[plugins."sites@openai-bundled"]
+enabled = true
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
 enabled = true
 
 [tui.model_availability_nux]
@@ -415,6 +471,10 @@ git-pr-instructions = "Pull requests should include a how and a why section. the
 selected-avatar-id = "custom:mishka"
 default-service-tier = "priority"
 show-context-window-usage = true
+appearanceTheme = "dark"
+appearanceDarkCodeThemeId = "monokai"
+dock-icon-preference = "codex-system"
+conversationDetailMode = "STEPS_COMMANDS"
 
 [desktop.appearanceLightChromeTheme]
 accent = "#cc7d5e"
@@ -429,6 +489,20 @@ surface = "#f9f9f7"
 diffAdded = "#00c853"
 diffRemoved = "#ff5f38"
 skill = "#cc7d5e"
+
+[desktop.appearanceDarkChromeTheme]
+accent = "#99947c"
+contrast = 60
+ink = "#f8f8f2"
+opaqueWindows = false
+surface = "#272822"
+
+[desktop.appearanceDarkChromeTheme.fonts]
+
+[desktop.appearanceDarkChromeTheme.semanticColors]
+diffAdded = "#86b42b"
+diffRemoved = "#c4265e"
+skill = "#8c6bc8"
 
 [hooks.state]
 
@@ -456,22 +530,30 @@ AWS_DEFAULT_REGION = "us-east-1"
 
 [mcp_servers.node_repl]
 args = []
-command = "/Applications/Codex.app/Contents/Resources/cua_node/bin/node_repl"
+command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
 startup_timeout_sec = 120
 
 [mcp_servers.node_repl.env]
 NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
-NODE_REPL_NODE_MODULE_DIRS = "/Applications/Codex.app/Contents/Resources/cua_node/lib/node_modules"
-NODE_REPL_NODE_PATH = "/Applications/Codex.app/Contents/Resources/cua_node/bin/node"
+NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
+NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
 NODE_REPL_TRUSTED_CODE_PATHS = "/Users/cgas/.codex"
 CODEX_HOME = "/Users/cgas/.codex"
-NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "47e4e79498666e677abe0583e69522464d31b5b5f28db65052a91c9cbd3281e9"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "6d25aa7656feac858f3a3bdaea5bcbab0dbfd426c9de8e6931ce90c399ee8e4f,c8b7e809d7cf9e20a57123b2530d476ccec9a01a6230a7b2b924fea7d94d7f4a"
 BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
 NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.623.30605"
-CODEX_CLI_PATH = "/Applications/Codex.app/Contents/Resources/codex"
+BROWSER_USE_CODEX_APP_VERSION = "26.707.31428"
+SKY_CUA_SERVICE_PATH = "/Users/cgas/.codex/plugins/cache/openai-bundled/computer-use/1.0.1000366/Codex Computer Use.app"
+CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
+
+[mcp_servers.computer-use]
+command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
+args = ["mcp"]
+cwd = "."
+enabled = false
 
 [memories]
 generate_memories = false
