@@ -1,4 +1,0 @@
-interface:
-  display_name: "Consult"
-  short_description: "Run guarded ChatGPT Pro consultations"
-  default_prompt: "Use $consult to get a GitHub-backed ChatGPT Pro second opinion on this task."

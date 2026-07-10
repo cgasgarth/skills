@@ -75,8 +75,9 @@ Do not select or verify the model before selecting the project. Do not type prom
 
 Use visible project-composer state as the authority:
 
-- A composer-area pill or button labeled `Pro` is reliable and sufficient. If present, proceed without opening the model menu.
-- Otherwise select `Pro`, then `GPT-5.6 Sol`, and verify `Pro` is visible before entering the prompt.
+- Treat the composer-area mode button as authoritative; it may be labeled with the active mode such as `High`, not `Model selector`.
+- Select the `Pro` mode radio when the active button is not `Pro`.
+- Open the resulting `Pro` menu, choose `GPT-5.6 Sol`, and verify its checked radio before entering the prompt.
 - Never select `Instant` or `Thinking` for this workflow.
 
 If Pro is unavailable, report the failure and do not send unless the user explicitly approves another model. The helper currently fails closed rather than selecting an alternate model.
