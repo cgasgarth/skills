@@ -99,7 +99,7 @@ async function attachGitHub(tab, composerName) {
 
   const pill = (await composer(tab, composerName)).getByText("GitHub", { exact: true });
   await pill.waitFor({ state: "visible", timeoutMs: 5000 });
-  if (!await pill.isVisible()) throw new Error("GitHub source pill was not visibly attached.");
+  if (!await pill.isVisible()) throw new Error("GitHub plugin pill was not visibly attached.");
 }
 
 async function enableImageMode(tab, composerName, aspectRatio) {
@@ -164,14 +164,30 @@ export async function startConsult({ iab, project, prompt, send = true, createIm
   const tab = await iab.tabs.new();
   await tab.goto(CHATGPT_URL);
 
-  const opened = await openProject(tab, project);
+  const requestedProject = project;
+  let selectedProject = project;
+  let usedFallbackProject = false;
+  let opened = await openProject(tab, selectedProject);
+  if (opened.status === "project_not_found" && normalized(selectedProject) !== normalized(FALLBACK_PROJECT)) {
+    selectedProject = FALLBACK_PROJECT;
+    usedFallbackProject = true;
+    opened = await openProject(tab, selectedProject);
+  }
   if (opened.status !== "project_open") return { ...opened, tab };
 
   await attachGitHub(tab, opened.composerName);
   if (createImage) await enableImageMode(tab, opened.composerName, aspectRatio);
   const modelSelection = await ensurePro(tab);
 
-  if (!send) return { status: "setup_verified_not_sent", project, githubAttached: true, ...modelSelection, tab };
+  if (!send) return {
+    status: "setup_verified_not_sent",
+    project: selectedProject,
+    requestedProject,
+    usedFallbackProject,
+    githubAttached: true,
+    ...modelSelection,
+    tab,
+  };
 
   const box = await composer(tab, opened.composerName);
   await box.type(prompt);
@@ -185,7 +201,9 @@ export async function startConsult({ iab, project, prompt, send = true, createIm
 
   return {
     status: "sent",
-    project,
+    project: selectedProject,
+    requestedProject,
+    usedFallbackProject,
     githubAttached: true,
     ...modelSelection,
     tab,
