@@ -1,4 +1,4 @@
 interface:
   display_name: "Consult"
-  short_description: "Consult ChatGPT Extended Pro from Codex"
-  default_prompt: "Use $consult to ask ChatGPT Extended Pro for a second opinion on this task."
+  short_description: "Run guarded ChatGPT Pro consultations"
+  default_prompt: "Use $consult to get a GitHub-backed ChatGPT Pro second opinion on this task."

@@ -1,153 +1,173 @@
 ---
 name: consult
-description: Use when ChatGPT consultation could materially improve hard coding, debugging, design, planning, math, science, research, or reasoning tasks.
+description: Use when ChatGPT consultation in the in-app Browser could materially improve hard coding, debugging, design, planning, math, science, research, or reasoning tasks. Runs a guarded helper against the persistent Browser session to open the matching ChatGPT Project, attach GitHub, verify Pro with GPT-5.6 Sol, enter the prompt, and send it.
 ---
 
 # Consult
 
-Use this skill to consult ChatGPT in the browser for hard coding, debugging, design, planning, math, science, research, or reasoning tasks. Provide enough context for useful reasoning, ask specific questions, follow up when needed, and synthesize the result back into the task.
+Use this skill to consult ChatGPT through the bundled `scripts/run-consult.mjs` helper and the persistent in-app Browser. Provide enough context for useful reasoning, ask specific questions, follow up when needed, and synthesize the result back into the task.
+
+This skill is self-contained. Do not load or invoke another consultation skill to complete its workflow.
 
 ## When to Consult
 
 Use consultation when ChatGPT could materially improve the result, such as ambiguous debugging, architectural tradeoffs, complex reviews, design critiques, hard prioritization, math, science, research, or decisions where another perspective may uncover risks.
 
-For advanced technical work, consult on science-heavy or math-heavy or advanced algorithms or large planning tasks. 
+For advanced technical work, consult on science-heavy or math-heavy work, advanced algorithms, or large planning tasks.
 
-Do not use consultation for straightforward edits, obvious test failures, simple documentation lookups, routine formatting, or tasks where local inspection and normal verification are clearly enough.
+Do not consult for straightforward edits, obvious test failures, simple documentation lookups, routine formatting, or tasks where local inspection and normal verification are clearly enough.
 
 ## Chat Thread Policy
 
-Start a new ChatGPT thread for every new consultation topic. Do not reuse an existing thread just because it is recent, already open, in the right project, or has the right repository attached.
+Start a new ChatGPT thread for every new consultation topic. Do not reuse an existing thread merely because it is recent, open, in the right project, or has the right repository attached.
 
-## Browser Setup
+Continue an existing thread only for follow-up discussion on the same topic, such as clarifying a previous answer, supplying missing evidence, or requesting narrower advice. Until the helper supports an explicit same-thread URL, report that limitation rather than silently creating a new thread for a requested follow-up.
 
-Use the Codex Browser Use plugin's in-app browser workflow. Read and follow its `browser` skill before browser actions, then initialize the browser runtime with the `iab` backend through the Node REPL.
+## Browser and Helper Setup
 
-### Composer layout
+Read and follow the installed Browser skill. Initialize its runtime, explicitly bind the persistent in-app browser as `iab`, and read the complete `iab` documentation before browser actions. Do not use Chrome, standalone Playwright, Selenium, or a separate browser profile.
 
-Before preparing a consultation composer, ensure the browser has a usable desktop-width layout. If a narrow viewport hides or compresses the attachment picker, use the Browser viewport capability to set a desktop width (for example, 1440px) before interacting with the composer. Reset a temporary override when the consultation is finished unless the user asks to keep it.
+Import the helper through the JavaScript browser-control session:
 
-## Hard Automation Boundary
+```js
+var scriptedConsult = await import("<skill-dir>/scripts/run-consult.mjs");
+```
 
-Open ChatGPT in the project that matches the task's repository, product, client, or domain. For repo work, derive the project from the workspace path, GitHub remote, PR/issue URL, or the user's explicit project name. For non-repo work, use the clearest product or domain named by the user.
+Create the consultation and retain its live session object:
 
-If a matching ChatGPT project exists, start the consultation there using that project's `New chat in ...` composer so the session is filed under the relevant project. If no matching project exists, start the session under the generalized `consult` project instead.
+```js
+globalThis.consultSession = await scriptedConsult.startConsult({
+  iab,
+  project: "<project>",
+  prompt: "<prompt>",
+  send: true,
+});
+nodeRepl.write(JSON.stringify(scriptedConsult.publicResult(consultSession)));
+```
 
-### Mandatory setup order
+The user's request to run the consultation authorizes sending the prepared task prompt. Use `send: false` only to test setup without entering or sending it.
 
-If the composer contains any pre-existing prompt text before the GitHub source pill is visibly attached, clear the text from the composer, verify it is empty, and then continue from step 2. Do not send or otherwise reuse the pre-existing draft.
+If authentication is required, keep the in-app tab as a handoff, ask the user to sign in there, and continue only after they say it is ready. Never handle passwords, OTPs, or CAPTCHAs.
 
-Complete consultation setup in this exact order:
+## Project Selection and Fallback
 
-1. Select the matching ChatGPT project and open a new, empty composer inside that project.
-2. Attach GitHub context while the composer is still empty, and verify its visible source pill.
-3. Verify the project composer shows `Pro`.
-4. Enter and send the consultation prompt.
+Open ChatGPT in the project matching the task's repository, product, client, or domain. For repo work, derive the project from the workspace path, GitHub remote, PR/issue URL, or the user's explicit project name. For non-repo work, use the clearest named product or domain.
 
-Do not select or verify the model before selecting the project. Do not type any prompt text before GitHub context is attached. A model setting chosen on the general ChatGPT home screen is not sufficient: verify it again after the project and GitHub context are in place.
+Project matching is case-insensitive and otherwise exact. The helper opens the matched project's home and its `New chat in ...` composer; it never reuses a prior chat for a new topic.
 
-Use a new ChatGPT thread for each new consultation topic, even when staying inside the same project. This is a standing consult-skill rule and should not be removed when reminders or cadence notes are updated. Do not reuse an existing ChatGPT thread merely because it is already open, recent, or attached to the right project. It is acceptable to continue an existing ChatGPT thread only for follow-up discussion on the same topic, such as clarifying a previous answer, supplying missing evidence, or asking for narrower advice on the same decision. If the page is already open and contains a useful same-topic consultation in the correct project, continue that chat for follow-up discussion instead of reloading or starting over. If the topic is new or the page is in the wrong project, start a new chat in the correct project before sending the consultation prompt.
+If the helper returns `project_not_found`, do not fall back automatically. Ask exactly: `I couldn't find the ChatGPT project “<requested>”. Should I use the general Consult project instead?` Retry with `project: "Consult"` only after the user agrees.
+
+Treat every thrown error as a failed hard gate. Report it and do not enter or submit the prompt through another route.
+
+## Mandatory Setup Order
+
+The helper must complete this exact order:
+
+1. Select the matching project and open a new, empty project composer.
+2. Attach GitHub context while the composer is empty and verify its visible source pill.
+3. If requested, enable image-generation mode and verify its visible pill.
+4. Verify the project composer shows `Pro` or select `Pro` and `GPT-5.6 Sol`.
+5. Enter and send the consultation prompt.
+
+Do not select or verify the model before selecting the project. Do not type prompt text before the GitHub source is visibly attached. A model setting selected on the general ChatGPT home screen is insufficient.
 
 ## Verify Pro
 
-After the correct project is selected and GitHub context is visibly attached, but before entering prompt text, verify the active chat mode is `Pro`.
+Use visible project-composer state as the authority:
 
-Use the visible page state as the authority:
+- A composer-area pill or button labeled `Pro` is reliable and sufficient. If present, proceed without opening the model menu.
+- Otherwise select `Pro`, then `GPT-5.6 Sol`, and verify `Pro` is visible before entering the prompt.
+- Never select `Instant` or `Thinking` for this workflow.
 
-- On the home screen, the header model selector may say `ChatGPT` even when the composer is configured for `Pro`.
-- The reliable, sufficient signal is the composer-area pill or button labeled `Pro`.
-- If the composer already shows `Pro`, proceed. Do not open the model menu merely to reconfirm `GPT-5.6 Sol`.
-- If the composer does not show `Pro`, open the `Model selector` menu, choose `Pro`, then choose `GPT-5.6 Sol` and verify its checkmark before sending.
-- If the menu exposes `Latest`, `Instant`, `Thinking`, `Pro`, and `Configure...`, do not choose `Instant` or `Thinking` for this skill.
-
-If `Pro` is unavailable, tell the user what you observed and do not send the consultation unless the user explicitly approves another model.
+If Pro is unavailable, report the failure and do not send unless the user explicitly approves another model. The helper currently fails closed rather than selecting an alternate model.
 
 ## Image Generation Mode
 
-When the desired ChatGPT output includes a generated visual, select `Create image` before sending the prompt. This applies to requests for mock UI images, visual design mockups, product or feature concepts, screenshots-as-concepts, storyboards, visual assets, or any consultation where the useful deliverable is an image rather than only text.
+When the requested ChatGPT output is a generated visual, pass `createImage: true`. This applies to mock UI images, visual design mockups, concepts, screenshots-as-concepts, storyboards, or other image deliverables.
 
-Workflow:
+If an aspect ratio matters, also pass its exact visible label as `aspectRatio: "<label>"`; otherwise leave it null for Auto. The helper verifies the image-mode pill before sending and fails closed if it is missing.
 
-- Open the composer `Add files and more` menu.
-- Click the `Create image` menu item.
-- Verify the composer shows the `Image, click to remove` pill before sending the prompt.
-- If aspect ratio matters, use the `Choose image aspect ratio` control before sending; otherwise leave it at `Auto`.
-- If the prompt also needs repo or file context, attach that context using the normal workflow and verify both the image pill and the attachment/context are present before sending.
-
-In image-generation prompts, state the visual deliverable clearly. Include target surface, audience, viewport or aspect ratio when relevant, product constraints, must-show UI states, and what the image should avoid. Ask for a concrete generated mockup, not just advice about how one could look.
+In image prompts, specify the target surface, audience, viewport or aspect ratio, product constraints, required states, and exclusions. Ask for a concrete generated mockup, not advice about how one could look.
 
 ## Attach GitHub Source
 
-**Hard gate:** a written instruction to use GitHub is never an attachment. The consultation must contain the structured GitHub source/context attachment created through the composer picker. If the visible GitHub source pill is missing, stop and do not send; do not substitute `@GitHub`, a repository URL/name, or prose such as "use the GitHub source".
+**Hard gate:** prose is never an attachment. Every consultation must contain the structured GitHub source/context pill created through the composer picker. A repository URL, name, `@GitHub`, or text saying to use GitHub does not satisfy this requirement.
 
-Attach GitHub context to every consultation, including general research questions that do not appear repository-specific. Attach it from the correct project with an empty composer, before model selection and before entering prompt text. For repo-specific work, select the evidenced repository; for general research, attach the available GitHub context without inventing a repository. Do not send the prompt if the GitHub source pill is absent.
+Attach GitHub to every consultation, including general research. For repo work, name the evidenced repository, branch, PR, issue, or file subset in the prompt. For general research, attach the available GitHub context without inventing a repository.
 
-GitHub attachment is mandatory; do not skip it because a question appears general, current-events-oriented, or otherwise unrelated to a specific repository.
+Before sending, require visible evidence of the GitHub source pill. In the handoff, state that the helper verified the pill before prompt entry and immediately before send. If the helper does not provide that evidence, report the consultation as not sent.
 
-Workflow:
-
-- For every consultation, attach GitHub before model selection or entering any prompt text. Start with an empty project composer; do not type the question, `@GitHub`, a repository name, or a temporary placeholder first.
-- In ChatGPT's composer, click the plus sign (`Add files and more`) before interacting with any attachment options.
-- With the picker open, type `github` in the active picker/composer input to reveal the GitHub source result. Do not send this temporary text as a prompt.
-- Click the resulting `GitHub` row with the GitHub icon; the temporary `github` text must be replaced by a GitHub source pill in the composer.
-- Click the `GitHub` row/icon. The typed `github` text must be replaced by a GitHub source pill in the composer.
-- A literal `@GitHub` mention in prompt text is not an attachment and does not satisfy this requirement.
-- If GitHub is visible directly in the plus menu, selecting it directly is fine. In the ChatGPT mobile/narrow composer, GitHub may still be under `Add files and more` -> `More` -> `GitHub`; check the `More` submenu before deciding GitHub is unavailable.
-- If a branch, PR, issue, or file subset matters, include that exact target in the prompt.
-- Before sending, inspect the visible composer state. It must show a GitHub source/context pill, not merely the menu search text, an `@GitHub` token, or a project name. Record that verification in the consult handoff.
-- In the handoff, state the attachment was visibly verified before prompt entry and again immediately before send. If that evidence is unavailable, report the consultation as not sent rather than claiming source attachment.
-- For GitHub-writing work, state in the prompt: `Use the attached GitHub source to create or update the requested milestones/issues directly in GitHub; do not only draft text for Codex to apply later. Use the GitHub plugin tools for all repository reads and GitHub mutations.` Do not claim GitHub issue creation succeeded until the GitHub UI or CLI confirms the resulting numbers.
-- If GitHub is not available, requires connection, or does not leave a visible source pill, do not send a prompt requesting issue creation. Fix the attachment flow or report the blocker.
-
-In the consultation prompt, explicitly tell ChatGPT that the GitHub source is attached Example:
+For GitHub-writing work, include:
 
 ```text
-Use the attached GitHub source. Please inspect the current implementation around src/foo.ts and tests/foo.test.ts before recommending changes. 
+Use the attached GitHub source to create or update the requested milestones/issues directly in GitHub; do not only draft text for Codex to apply later. Use the GitHub plugin tools for all repository reads and GitHub mutations.
 ```
 
-## GitHub Milestones And Issues
+Do not claim GitHub mutation succeeded until the GitHub UI, connector, or CLI confirms the resulting artifact identifiers.
 
-For every consultation tied to a Git repository, GitHub issues and milestones are the persistent artifact of the consultation. This is the default, not an optional follow-up: tell ChatGPT to inspect the repository and directly create, refine, split, link, reassign, or close GitHub issues as needed. Do not ask it merely to return proposed issue text for Codex to recreate later. The only exception is a consultation that is genuinely unrelated to any Git repository.
+If GitHub is unavailable, requires connection, or fails to leave a visible pill, do not send. Report the helper's failure.
 
-When consult work is organized around GitHub milestones, first verify that the composer has a visible GitHub source pill. Create or confirm the required milestones before asking ChatGPT to create issues. ChatGPT can create GitHub issues and assign them to existing milestones, but do not assume it can create the milestones themselves.
+Begin consultation prompts with an explicit source statement, for example:
 
-Pass the milestone titles and numbers into the consultation prompt, along with any labels, assignees, repository, scope, and sequencing constraints. In every repo-backed prompt, include an explicit instruction such as: `Use the attached GitHub source to directly edit the existing issues and create any needed PR-sized child issues under milestone #N. Persist the final outcome in GitHub.`
+```text
+Use the attached GitHub source. Inspect the current implementation around src/foo.ts and tests/foo.test.ts before recommending changes.
+```
 
-If a milestone cannot be created or confirmed from the available local or GitHub tools, tell ChatGPT that issue creation must wait for milestone IDs and ask for a milestone-to-issue plan rather than asking it to create issues immediately.
+## GitHub Milestones and Issues
 
-For milestone backlog refinement, require ChatGPT to inspect the attached repository before writing or editing issues. The prompt should name the exact milestone, list the current issue numbers/titles, and ask ChatGPT to reference concrete files, components, package scripts, schemas, commands, and existing tests that are relevant to each issue. Generic product-manager issue text is not enough.
+For every repository-backed consultation, use GitHub issues and milestones as the persistent artifact. Tell ChatGPT to inspect the repository and directly create, refine, split, link, reassign, or close issues as needed. Do not ask it merely to return issue text for Codex to recreate. The exception is work genuinely unrelated to a Git repository.
 
-Ask ChatGPT to make every issue PR-sized. If an issue would naturally take multiple PRs, ChatGPT should split it into multiple issues under the same milestone rather than leave an oversized catch-all issue. Each issue should include:
+Create or confirm required milestones before the consultation. Do not assume ChatGPT can create milestones. Pass milestone titles and numbers, labels, assignees, repository, scope, and sequencing constraints into the prompt.
 
-- `Why`: the concrete product, quality, validation, or maintainability gap, with current code/test references.
-- `How`: an actionable implementation plan naming likely files, modules, APIs, UI surfaces, and sequencing. It should include code examples as needed and strong refinement to make issues clear and actionable.
-- `Validation`: exact local commands, expected runtime/UI/output proof, fixtures or RAW inputs when relevant, and what regression should fail if the implementation is broken.
-- `Acceptance`: observable completion criteria that distinguish schema/planning/probe-only progress from real runtime/product behavior.
+If a milestone cannot be created or confirmed, tell ChatGPT issue creation must wait for milestone IDs and request a milestone-to-issue plan instead.
 
-When asking ChatGPT to create issues directly, tell it to use the existing milestone number, link related issues, close or mark obsolete duplicated/meta-only issues when appropriate. After ChatGPT responds, verify the GitHub mutations rather than recreating the issues locally; Codex should only make a direct GitHub edit when the attached GitHub action demonstrably failed or a small factual correction is needed.
+For milestone backlog refinement, name the exact milestone and current issue numbers/titles. Require concrete references to relevant files, components, package scripts, schemas, commands, and tests. Generic product-management text is insufficient.
+
+Make every issue PR-sized. Split work requiring multiple PRs into multiple issues under the same milestone. Require each issue to include:
+
+- `Why`: the concrete product, quality, validation, or maintainability gap with current code/test references.
+- `How`: an actionable implementation plan naming likely files, modules, APIs, UI surfaces, sequencing, and code examples where useful.
+- `Validation`: exact commands, runtime/UI/output proof, fixtures or raw inputs, and the regression expected to fail if broken.
+- `Acceptance`: observable criteria distinguishing planning or schema progress from real runtime/product behavior.
+
+Tell ChatGPT to use the existing milestone number, link related issues, and close or mark obsolete duplicated/meta-only issues when appropriate. Afterward, verify GitHub mutations rather than recreating them locally. Make a direct correction only when the attached GitHub action demonstrably failed or a small factual fix is needed.
 
 ## Consultation Prompt
 
-Send an outcome-first prompt. State the goal, success criteria, relevant evidence, and desired output shape.
+Update the consultation prompt for the actual task rather than forwarding the user's words unchanged. Make it outcome-first and include:
+
+- The goal and concrete success criteria.
+- Relevant repository, file, test, error, design, or research evidence.
+- Constraints, assumptions, and decisions that must be challenged.
+- The exact output shape needed.
+- The explicit attached-GitHub instruction.
+- Direct GitHub mutation instructions when applicable.
+
+Preserve the user's intent. Do not broaden requested external mutations without authorization.
 
 ## Manage the Exchange
 
-Wait for ChatGPT to finish responding before using the answer or continuing the underlying task. `Pro` with `GPT-5.6 Sol` can be very slow, especially for large prompts, repo-backed prompts, or prompts asking for review and synthesis. Slow output is expected and should not be treated as stuck by default. At 40 minutes, refresh the chat page and verify that it is still making progress; 40 minutes alone does not make a response stuck. Never use the page's `Answer now` control.
+The helper's responsibility ends immediately after clicking `Send prompt`. It must not poll, refresh, extract the response, click `Answer now`, or otherwise manage ChatGPT's answer. Preserve the returned live tab and URL.
 
-Waiting rules:
+When the surrounding task requires the answer, manage waiting outside the helper through the normal Browser workflow. Wait for ChatGPT to finish before using the answer or continuing the underlying task, and keep the user updated at least once per minute. Never infer completion from elapsed time alone.
 
-- Wait at least 30 minutes before treating any `Pro` with `GPT-5.6 Sol` response as slow. At one hour, refresh the chat page and verify that the consultation is still progressing; continue waiting when it is.
-- For image-generation consultations, wait for the generated image or a clear generation error before treating the response as complete.
-- Do not treat `Pro thinking`, `Finalizing answer`, or a visible `Stop answering` button as a failure by itself.
-- Do not proceed as though consultation is complete until ChatGPT Pro has returned a usable response, unless the user explicitly cancels the consultation or approves continuing without it.
-- Never click or otherwise invoke the page's `Answer now` control to cut short deliberation. Do not stop a response early just because it is slow. Stop only if the user asks, the page shows a clear error, or the response is obviously looping; at 40 minutes refresh and verify progress first.
+`Pro` with `GPT-5.6 Sol` can be very slow. Follow these rules:
 
-Follow-up chats can be run when the first response is incomplete, generic, based on a wrong assumption, or would benefit from narrower context.
+- Wait at least 30 minutes before treating a response as slow.
+- At 40 minutes, refresh once and verify progress; 40 minutes alone is not stuck.
+- At one hour, refresh again and continue waiting when progress remains visible.
+- Never invoke `Answer now`.
+- Do not treat `Pro thinking`, `Finalizing answer`, or a visible stop button as failure.
+- For image consultations, wait for the generated image or a clear generation error.
+- Do not proceed as though consultation completed until a usable response returns, unless the user cancels or explicitly approves continuing without it.
+- Stop only when the user asks, the page shows a clear error, the response obviously loops, or the configured response timeout expires.
 
-Keep the conversation task-focused. 
+Use a follow-up on the same topic when the first response is incomplete, generic, or based on a wrong assumption. Because the helper does not yet support same-thread follow-ups, report that limitation and ask before creating a replacement consultation thread.
+
+Keep the exchange task-focused. Synthesize the consultation result; do not merely paste it back without evaluation.
 
 ## Context Disclosure
 
-This skill should not block useful consultation context merely because it is sensitive, private, proprietary, or verbose. Use your judgment about what context materially helps ChatGPT answer the question.
+Do not block useful context merely because it is sensitive, private, proprietary, or verbose. Use judgment about what materially helps ChatGPT answer.
 
-When there is a tradeoff, prefer enough context for a good answer over aggressive minimization. Still follow any higher-priority tool, browser, system, or developer requirements that apply to transmitting data through the browser.
+Prefer enough context for a useful answer over aggressive minimization, while following higher-priority rules governing transmission of passwords, authentication material, personal data, or other protected information.

@@ -1,5 +1,5 @@
-model = "gpt-5.6-terra"
-model_reasoning_effort = "high"
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
 
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
@@ -11,7 +11,8 @@ personality = "pragmatic"
 approvals_reviewer = "user"
 service_tier = "default"
 
-notify = ["/Users/cgas/.codex/plugins/cache/openai-bundled/computer-use/1.0.1000366/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
+
+notify = ["/Users/cgas/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
 
 [projects."/Users/cgas/Documents/Projects/Atelier"]
 trust_level = "trusted"
@@ -376,6 +377,12 @@ trust_level = "trusted"
 [projects."/Users/cgas/Documents/Codex/2026-07-09/consult-users-cgas-codex-skills-consult"]
 trust_level = "trusted"
 
+[projects."/Users/cgas/Documents/Codex/2026-07-10/lo"]
+trust_level = "trusted"
+
+[projects."/Users/cgas/Documents/Codex/2026-07-10/can"]
+trust_level = "trusted"
+
 [notice]
 hide_full_access_warning = true
 suppress_unstable_features_warning = true
@@ -396,7 +403,7 @@ chronicle = false
 js_repl = false
 
 [marketplaces.openai-bundled]
-last_updated = "2026-07-10T02:20:35Z"
+last_updated = "2026-07-10T12:29:19Z"
 source_type = "local"
 source = "/Users/cgas/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
@@ -411,9 +418,6 @@ source_type = "local"
 source = "/Users/cgas/Documents/Projects"
 
 [plugins."github@openai-curated"]
-enabled = true
-
-[plugins."copilot@local-projects"]
 enabled = true
 
 [plugins."gmail@openai-curated"]
@@ -435,9 +439,6 @@ enabled = true
 enabled = true
 
 [plugins."pdf@openai-primary-runtime"]
-enabled = true
-
-[plugins."template-creator@openai-primary-runtime"]
 enabled = true
 
 [plugins."chrome@openai-bundled"]
@@ -475,6 +476,7 @@ appearanceTheme = "dark"
 appearanceDarkCodeThemeId = "monokai"
 dock-icon-preference = "codex-system"
 conversationDetailMode = "STEPS_COMMANDS"
+computerUseAlwaysHidePictureInPicture = true
 
 [desktop.appearanceLightChromeTheme]
 accent = "#cc7d5e"
@@ -511,43 +513,33 @@ trusted_hash = "sha256:5a6bc80af6b27ea839863b0445d4c4cee362abbf5cac4152363fa14c3
 
 [mcp_servers.aws_mcp]
 command = "/opt/homebrew/bin/uvx"
-args = [
-  "mcp-proxy-for-aws@latest",
-  "https://aws-mcp.us-east-1.api.aws/mcp",
-  "--profile",
-  "aws-mcp-readonly",
-  "--region",
-  "us-east-1",
-  "--metadata",
-  "AWS_REGION=us-east-1",
-]
-startup_timeout_sec = 120
+args = ["mcp-proxy-for-aws@latest", "https://aws-mcp.us-east-1.api.aws/mcp", "--profile", "aws-mcp-readonly", "--region", "us-east-1", "--metadata", "AWS_REGION=us-east-1"]
+startup_timeout_sec = 120.0
 
 [mcp_servers.aws_mcp.env]
+AWS_DEFAULT_REGION = "us-east-1"
 AWS_PROFILE = "aws-mcp-readonly"
 AWS_REGION = "us-east-1"
-AWS_DEFAULT_REGION = "us-east-1"
 
 [mcp_servers.node_repl]
-args = []
 command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
-startup_timeout_sec = 120
+startup_timeout_sec = 120.0
 
 [mcp_servers.node_repl.env]
-NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
-NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
-NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
-NODE_REPL_TRUSTED_CODE_PATHS = "/Users/cgas/.codex"
-CODEX_HOME = "/Users/cgas/.codex"
-NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "6d25aa7656feac858f3a3bdaea5bcbab0dbfd426c9de8e6931ce90c399ee8e4f,c8b7e809d7cf9e20a57123b2530d476ccec9a01a6230a7b2b924fea7d94d7f4a"
 BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
+BROWSER_USE_CODEX_APP_VERSION = "26.707.31428"
+CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
+CODEX_HOME = "/Users/cgas/.codex"
 NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
 NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
-BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.707.31428"
+NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
+NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
+NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "6d25aa7656feac858f3a3bdaea5bcbab0dbfd426c9de8e6931ce90c399ee8e4f,c8b7e809d7cf9e20a57123b2530d476ccec9a01a6230a7b2b924fea7d94d7f4a"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/cgas/.codex"
 SKY_CUA_SERVICE_PATH = "/Users/cgas/.codex/plugins/cache/openai-bundled/computer-use/1.0.1000366/Codex Computer Use.app"
-CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
 
 [mcp_servers.computer-use]
 command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
@@ -555,6 +547,15 @@ args = ["mcp"]
 cwd = "."
 enabled = false
 
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"
+
 [memories]
 generate_memories = false
 use_memories = false
+
+[apps.connector_openai_codex_document_control]
+enabled = false
+
+[apps.connector_691eab1e001081919e57189f8b2f03bc]
+enabled = false

@@ -27,6 +27,8 @@
 !skills/amazon-support-browser/**
 !skills/consult/
 !skills/consult/**
+!skills/consult-legacy-hand-automation/
+!skills/consult-legacy-hand-automation/**
 
 # User-authored Codex pets
 !pets/

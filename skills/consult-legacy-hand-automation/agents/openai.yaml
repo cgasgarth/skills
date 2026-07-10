@@ -1,0 +1,7 @@
+interface:
+  display_name: "Consult Legacy Hand Automation"
+  short_description: "Reference manual ChatGPT consultation workflow"
+  default_prompt: "Use $consult-legacy-hand-automation to run the archived manual consultation workflow."
+
+policy:
+  allow_implicit_invocation: false
