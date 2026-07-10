@@ -19,20 +19,6 @@ Do not use consultation for straightforward edits, obvious test failures, simple
 
 Start a new ChatGPT thread for every new consultation topic. Do not reuse an existing thread just because it is recent, already open, in the right project, or has the right repository attached.
 
-## Codex Task Isolation
-
-Run each consultation in its own dedicated Codex task/thread, not in a multi-agent subagent. The coordinating task creates or routes to that dedicated task, and that task alone operates the ChatGPT browser consultation, owns its 10-minute reminder, and returns its outcome to the coordinator.
-
-Do not use `multi_agent_v1__spawn_agent` for browser consultation, ChatGPT prompting, or consult-result polling. Implementation subagents may consume a completed consult handoff, but they must not operate the consultation themselves. This isolates slow Pro responses from code ownership, preserves a clear handoff, and prevents a working implementation agent from being blocked on browser state.
-
-When system rules allow creating a separate Codex thread, use the thread-management surface rather than a subagent. If a separate thread is not currently permitted, keep the consultation in the coordinating task; do not substitute a subagent.
-
-Same-topic follow-ups may continue the existing thread when the follow-up is directly tied to the previous prompt and answer, such as clarifying advice, adding missing evidence, asking for a narrower recommendation, or checking an implication of the same decision.
-
-When the topic changes, start a fresh chat inside the appropriate ChatGPT project. This includes switching from one feature, PR, issue, bug, design decision, CI failure, or research topic to another. Treat this as a standing rule for all consult use.
-
-Before choosing whether to reuse a thread, internally decide whether the request is a same-topic follow-up or needs its own fresh thread. When starting a fresh thread, do not announce or label it as a new topic in the ChatGPT prompt, and do not include literal phrases such as "new topic" or "fresh consult" in the message. The new chat already provides that context. Just ask the actual consultation question with the concrete milestone, feature, bug, PR, or decision context. If it is a same-topic follow-up, continue only when the existing chat is about the same issue, PR, bug, design decision, CI failure, or research question. If there is doubt, start a new thread.
-
 ## Browser Setup
 
 Use the Codex Browser Use plugin's in-app browser workflow. Read and follow its `browser` skill before browser actions, then initialize the browser runtime with the `iab` backend through the Node REPL.
@@ -55,8 +41,6 @@ Complete consultation setup in this exact order:
 Do not select or verify the model before selecting the project. Do not type any prompt text before GitHub context is attached. A model setting chosen on the general ChatGPT home screen is not sufficient: verify it again after the project and GitHub context are in place.
 
 Use a new ChatGPT thread for each new consultation topic, even when staying inside the same project. This is a standing consult-skill rule and should not be removed when reminders or cadence notes are updated. Do not reuse an existing ChatGPT thread merely because it is already open, recent, or attached to the right project. It is acceptable to continue an existing ChatGPT thread only for follow-up discussion on the same topic, such as clarifying a previous answer, supplying missing evidence, or asking for narrower advice on the same decision. If the page is already open and contains a useful same-topic consultation in the correct project, continue that chat for follow-up discussion instead of reloading or starting over. If the topic is new or the page is in the wrong project, start a new chat in the correct project before sending the consultation prompt.
-
-Start each distinct consultation as a new Codex task in the appropriate project, using `GPT-5.6 Luna` with high reasoning; that codex task shall be instructed to run the consult skill. Do not delegate consultation to a subagent. 
 
 ## Verify Pro
 
@@ -101,10 +85,9 @@ Workflow:
 - Click the `GitHub` row/icon. The typed `github` text must be replaced by a GitHub source pill in the composer.
 - A literal `@GitHub` mention in prompt text is not an attachment and does not satisfy this requirement.
 - If GitHub is visible directly in the plus menu, selecting it directly is fine. In the ChatGPT mobile/narrow composer, GitHub may still be under `Add files and more` -> `More` -> `GitHub`; check the `More` submenu before deciding GitHub is unavailable.
-- If the picker asks for a repository, choose the repo evidenced by local context. For a general consultation with no repository evidence, attach the available generic GitHub source if supported; do not guess or invent a repository. If the UI requires a repository and offers no appropriate generic context, stop and report that GitHub context could not be attached.
 - If a branch, PR, issue, or file subset matters, include that exact target in the prompt.
 - Before sending, inspect the visible composer state. It must show a GitHub source/context pill, not merely the menu search text, an `@GitHub` token, or a project name. Record that verification in the consult handoff.
-- For GitHub-writing work, state in the prompt: `Use the attached GitHub source to create or update the requested milestones/issues directly in GitHub; do not only draft text for Codex to apply later.` Do not claim GitHub issue creation succeeded until the GitHub UI or CLI confirms the resulting numbers.
+- For GitHub-writing work, state in the prompt: `Use the attached GitHub source to create or update the requested milestones/issues directly in GitHub; do not only draft text for Codex to apply later. Use the GitHub plugin tools for all repository reads and GitHub mutations.` Do not claim GitHub issue creation succeeded until the GitHub UI or CLI confirms the resulting numbers.
 - If GitHub is not available, requires connection, or does not leave a visible source pill, do not send a prompt requesting issue creation. Fix the attachment flow or report the blocker.
 
 In the consultation prompt, explicitly tell ChatGPT that the GitHub source is attached Example:
@@ -119,7 +102,7 @@ For every consultation tied to a Git repository, GitHub issues and milestones ar
 
 When consult work is organized around GitHub milestones, first verify that the composer has a visible GitHub source pill. Create or confirm the required milestones before asking ChatGPT to create issues. ChatGPT can create GitHub issues and assign them to existing milestones, but do not assume it can create the milestones themselves.
 
-Pass the milestone titles and numbers into the consultation prompt, along with any labels, assignees, repository, scope, and sequencing constraints. In every repo-backed prompt, include an explicit instruction such as: `Use the attached GitHub source to directly edit the existing issues and create any needed PR-sized child issues under milestone #N. Persist the final outcome in GitHub; do not return a draft for Codex to apply.`
+Pass the milestone titles and numbers into the consultation prompt, along with any labels, assignees, repository, scope, and sequencing constraints. In every repo-backed prompt, include an explicit instruction such as: `Use the attached GitHub source to directly edit the existing issues and create any needed PR-sized child issues under milestone #N. Persist the final outcome in GitHub.`
 
 If a milestone cannot be created or confirmed from the available local or GitHub tools, tell ChatGPT that issue creation must wait for milestone IDs and ask for a milestone-to-issue plan rather than asking it to create issues immediately.
 
