@@ -36,9 +36,21 @@ async function findProject(tab, requested) {
   return await locator.count() === 1 ? { label, locator } : null;
 }
 
+async function waitForProject(tab, requested) {
+  const control = tab.playwright.getByRole("button", { name: requested, exact: true });
+  try {
+    await control.waitFor({ state: "visible", timeoutMs: 15000 });
+  } catch {
+    return null;
+  }
+  return findProject(tab, requested);
+}
+
 async function openProject(tab, project) {
   await tab.playwright.domSnapshot();
-  let target = await findProject(tab, project);
+  // A fresh ChatGPT tab can render its shell before the project list hydrates.
+  // Wait for the requested control before deciding that fallback is necessary.
+  let target = await waitForProject(tab, project);
 
   if (!target) {
     const more = tab.playwright.getByText("More", { exact: true });
@@ -60,14 +72,25 @@ async function openProject(tab, project) {
 
   await target.locator.click();
   await tab.playwright.domSnapshot();
+
+  // Expanding a project can replace its sidebar row. Reacquire the project
+  // control so the home button is scoped to the current DOM, not a stale row.
+  target = await findProject(tab, target.label);
+  if (!target) throw new Error(`Project ${project} disappeared after it was opened.`);
   const row = target.locator.locator("xpath=..");
   const home = row.getByRole("button", { name: "Open project home", exact: true });
   await (await requireOne(home, `project-home control for ${project}`)).click();
-  const snapshot = await tab.playwright.domSnapshot();
   const composerName = `New chat in ${target.label}`;
-  if (!snapshot.includes(composerName)) {
-    throw new Error(`Project home did not expose ${composerName}.`);
+
+  // Project navigation and composer mounting are asynchronous. Waiting on the
+  // actual accessible textbox avoids a false failure from an early snapshot.
+  const projectComposer = tab.playwright.getByRole("textbox", { name: composerName, exact: true });
+  try {
+    await projectComposer.waitFor({ state: "visible", timeoutMs: 15000 });
+  } catch {
+    throw new Error(`Project home did not expose ${composerName} within 15 seconds.`);
   }
+  await requireOne(projectComposer, `project composer ${composerName}`);
   return { status: "project_open", composerName };
 }
 
