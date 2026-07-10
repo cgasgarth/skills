@@ -78,6 +78,8 @@ In image-generation prompts, state the visual deliverable clearly. Include targe
 
 ## Attach GitHub Source
 
+**Hard gate:** a written instruction to use GitHub is never an attachment. The consultation must contain the structured GitHub source/context attachment created through the composer picker. If the visible GitHub source pill is missing, stop and do not send; do not substitute `@GitHub`, a repository URL/name, or prose such as "use the GitHub source".
+
 Attach GitHub context to every consultation, including general research questions that do not appear repository-specific. Attach it from the correct project with an empty composer, before model selection and before entering prompt text. For repo-specific work, select the evidenced repository; for general research, attach the available GitHub context without inventing a repository. Do not send the prompt if the GitHub source pill is absent.
 
 GitHub attachment is mandatory; do not skip it because a question appears general, current-events-oriented, or otherwise unrelated to a specific repository.
@@ -93,6 +95,7 @@ Workflow:
 - If GitHub is visible directly in the plus menu, selecting it directly is fine. In the ChatGPT mobile/narrow composer, GitHub may still be under `Add files and more` -> `More` -> `GitHub`; check the `More` submenu before deciding GitHub is unavailable.
 - If a branch, PR, issue, or file subset matters, include that exact target in the prompt.
 - Before sending, inspect the visible composer state. It must show a GitHub source/context pill, not merely the menu search text, an `@GitHub` token, or a project name. Record that verification in the consult handoff.
+- In the handoff, state the attachment was visibly verified before prompt entry and again immediately before send. If that evidence is unavailable, report the consultation as not sent rather than claiming source attachment.
 - For GitHub-writing work, state in the prompt: `Use the attached GitHub source to create or update the requested milestones/issues directly in GitHub; do not only draft text for Codex to apply later. Use the GitHub plugin tools for all repository reads and GitHub mutations.` Do not claim GitHub issue creation succeeded until the GitHub UI or CLI confirms the resulting numbers.
 - If GitHub is not available, requires connection, or does not leave a visible source pill, do not send a prompt requesting issue creation. Fix the attachment flow or report the blocker.
 
