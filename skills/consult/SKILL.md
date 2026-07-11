@@ -5,6 +5,8 @@ description: Use when ChatGPT consultation in the in-app Browser could materiall
 
 # Consult
 
+Do not use this skill to review pull requests unless the user explicitly asks to use `consult` for the PR review.
+
 Use `scripts/run-consult.mjs` to start a fresh ChatGPT consultation. The helper owns browser mechanics: project navigation, empty-composer enforcement, GitHub plugin attachment, optional image mode, Pro/GPT-5.6 Sol selection, prompt entry, and sending.
 
 ## Run the Helper
