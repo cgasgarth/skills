@@ -1,5 +1,5 @@
-model = "gpt-5.6-sol"
-model_reasoning_effort = "medium"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "high"
 
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
@@ -8,11 +8,11 @@ personality = "pragmatic"
 
 
 
-approvals_reviewer = "user"
 service_tier = "default"
 
 
-notify = ["/Users/cgas/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
+
+notify = ["/Users/cgas/.codex/plugins/cache/openai-bundled/computer-use/1.0.1000387/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
 
 [projects."/Users/cgas/Documents/Projects/Atelier"]
 trust_level = "trusted"
@@ -55,332 +55,16 @@ trust_level = "trusted"
 
 [projects."/Users/cgas/Documents/Projects/capture-one-mcp"]
 trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-04-19-what-should-i-expect-to-come"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-04-20-why-does-this-error-keep-happening"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-04-20-computer-use-plugin-computer-use-openai"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-04-20-can-this-be-used-to-have"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-04-20-can-you-see-in-my-documents"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-04-25/computer-use-plugin-computer-use-openai"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-04-25/browser-use-plugin-browser-use-openai"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-04-26/https-cua-ai-docs-cua-driver"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-04-26/browser-use-plugin-browser-use-openai"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-04-26/what-is-opencode-oool-call-pruning"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-04-29/generate-an-image-with-4-polo"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-04/can-you-look-at-my-memory"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-04/for-this-codex-should-we-change"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-04/computer-plugin-computer-use-openai-bundled"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-05/can-you-get-the-goal-command"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-05/can-you-add-a-new-global"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-06/browser-plugin-browser-use-openai-bundled"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-06/can-you-set-this-up-on"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-06/copilot-plugin-copilot-local-projects-go"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-06/explain-to-me-the-codex-goal"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-06/plugin-creator-users-cgas-codex-skills"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-08/chrome-plugin-chrome-openai-bundled-can"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-08/files-mentioned-by-the-user-img"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-08/how-tall-is-wemby"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-08/capture-one-plugin-computer-use-openai"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-08/chrome-plugin-chrome-openai-bundled-find"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-08/chrome-plugin-chrome-openai-bundled-find-2"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-09/search-japenese-sites-for-a-great"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-11/are-there-any-open-source-programs"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-13/gmail-plugin-gmail-openai-curated-google"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-14/chrome-chrome-users-cgas-codex-plugins"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-14/it-feels-like-your-context-is"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-14/help-me-out-on-this-features"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-15/how-do-i-set-this-up"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-19/chrome-plugin-chrome-openai-bundled-computer"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-20/google-drive-plugin-google-drive-openai"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-21/chrome-plugin-chrome-openai-bundled-find"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-21/applications-mentioned-by-the-user-appshot"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-23/applications-mentioned-by-the-user-appshot"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-23/on-my-windows-desktop-i-just"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-26/chrome-plugin-chrome-openai-bundled-im"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-26/computer-plugin-computer-use-openai-bundled"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-26/why-is-this-session-making-me"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-27/amazon-support-browser-users-cgas-codex"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-27/chrome-plugin-chrome-openai-bundled-i"]
-trust_level = "trusted"
-
 [projects."/Users/cgas/Documents/Cameras"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-31/chrome-plugin-chrome-openai-bundled-i"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-31/has-anyone-pirated-capture-one-for"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-05-31/computer-plugin-computer-use-openai-bundled"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-01/will-i-be-able-to-use"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-01/browser-plugin-browser-openai-bundled-find"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-01/browser-plugin-browser-openai-bundled-go"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-03/look-at-the-skill-instructions-for"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-03/can-you-download-claude-cli-then"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-03/how-are-you-claude"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-03/how-are-you-claude-2"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-03/chrome-plugin-chrome-openai-bundled-i"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-03/are-you-able-to-interact-easier"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-04/chrome-plugin-chrome-openai-bundled-shop"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-05/update-your-global-consult-skill-with"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-05/is-npm-on-path-if-not"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-08/i-just-got-offered-to-resign"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-08/can-i-create-a-photography-gallery"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-09/brave-browser-plugin-computer-use-openai"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-09/files-mentioned-by-the-user-codex"]
 trust_level = "trusted"
 
 [projects."/private/tmp"]
 trust_level = "trusted"
 
-[projects."/Users/cgas/Documents/Codex/2026-06-09/you-there"]
-trust_level = "trusted"
-
 [projects."/Users/cgas/Documents/RawEngine"]
 trust_level = "trusted"
 
-[projects."/Users/cgas/Documents/Codex/2026-06-10/make-an-update-to-the-conslut"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-10/applications-mentioned-by-the-user-appshot"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-11/can-you-make-a-new-repo"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-11/are-you-there"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-11/you-there"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-11/messages-plugin-computer-use-openai-bundled"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-13/i-have-a-very-long-running"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-17/does-the-person-need-to-sign"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-17/it-looks-like-my-rate-limits"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-17/in-app-browser-the-user-has"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-17/is-there-any-friction-this-agent"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-18/how-many-tokens-has-this-session"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-18/i-want-you-to-start-using"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-19/are"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-19/loo"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-19/c"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-20/com"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-21/c"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-21/esti"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-22/updat"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-22/how"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-25/w"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-25/lo"]
-trust_level = "trusted"
-
 [projects."/Users/cgas/Documents/RawEngine/RapidRaw"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-28/is"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-29/this"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-29/upda"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-29/updat"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-29/i"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-30/un"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-06-30/how"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-07-05/aw"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-07-06/new-chat"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-07-07/new-chat"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-07-09/lo"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-07-09/w"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-07-09/in"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-07-09/run"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-07-09/consult-users-cgas-codex-skills-consult"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-07-10/lo"]
-trust_level = "trusted"
-
-[projects."/Users/cgas/Documents/Codex/2026-07-10/can"]
 trust_level = "trusted"
 
 [notice]
@@ -392,18 +76,10 @@ fast_default_opt_out = true
 "gpt-5.3-codex" = "gpt-5.4"
 
 [features]
-multi_agent = true
-responses_websockets_v2 = true
-memories = false
 prevent_idle_sleep = true
-goals = true
-
-hooks = true
-chronicle = false
-js_repl = false
 
 [marketplaces.openai-bundled]
-last_updated = "2026-07-10T12:29:19Z"
+last_updated = "2026-07-12T14:19:24Z"
 source_type = "local"
 source = "/Users/cgas/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
@@ -455,6 +131,7 @@ enabled = true
 
 [tui.model_availability_nux]
 "gpt-5.5" = 4
+"gpt-5.6-sol" = 2
 
 [desktop]
 ambient-suggestions-enabled = false
@@ -522,24 +199,25 @@ AWS_PROFILE = "aws-mcp-readonly"
 AWS_REGION = "us-east-1"
 
 [mcp_servers.node_repl]
+args = []
 command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
-startup_timeout_sec = 120.0
+startup_timeout_sec = 120
 
 [mcp_servers.node_repl.env]
-BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
-BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.707.31428"
-CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
-CODEX_HOME = "/Users/cgas/.codex"
-NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
-NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
-NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
 NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
 NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
-NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "6d25aa7656feac858f3a3bdaea5bcbab0dbfd426c9de8e6931ce90c399ee8e4f,c8b7e809d7cf9e20a57123b2530d476ccec9a01a6230a7b2b924fea7d94d7f4a"
 NODE_REPL_TRUSTED_CODE_PATHS = "/Users/cgas/.codex"
-SKY_CUA_SERVICE_PATH = "/Users/cgas/.codex/plugins/cache/openai-bundled/computer-use/1.0.1000366/Codex Computer Use.app"
+CODEX_HOME = "/Users/cgas/.codex"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "6d25aa7656feac858f3a3bdaea5bcbab0dbfd426c9de8e6931ce90c399ee8e4f,e74b67ab909392b37f7aef14977fce7aa80cfa02ade5491f30abcdbcb9e69f33"
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
+BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
+BROWSER_USE_CODEX_APP_VERSION = "26.707.51957"
+SKY_CUA_SERVICE_PATH = "/Users/cgas/.codex/plugins/cache/openai-bundled/computer-use/1.0.1000387/Codex Computer Use.app"
+CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
 
 [mcp_servers.computer-use]
 command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
