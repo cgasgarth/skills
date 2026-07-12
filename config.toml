@@ -4,14 +4,6 @@ model_reasoning_effort = "high"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
 personality = "pragmatic"
-
-
-
-
-service_tier = "default"
-
-
-
 notify = ["/Users/cgas/.codex/plugins/cache/openai-bundled/computer-use/1.0.1000387/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
 
 [projects."/Users/cgas/Documents/Projects/Atelier"]
@@ -72,9 +64,6 @@ hide_full_access_warning = true
 suppress_unstable_features_warning = true
 fast_default_opt_out = true
 
-[notice.model_migrations]
-"gpt-5.3-codex" = "gpt-5.4"
-
 [features]
 prevent_idle_sleep = true
 
@@ -129,10 +118,6 @@ enabled = true
 [plugins."browser@openai-bundled"]
 enabled = true
 
-[tui.model_availability_nux]
-"gpt-5.5" = 4
-"gpt-5.6-sol" = 2
-
 [desktop]
 ambient-suggestions-enabled = false
 appearanceLightCodeThemeId = "absolutely"
@@ -162,8 +147,6 @@ ink = "#2d2d2b"
 opaqueWindows = false
 surface = "#f9f9f7"
 
-[desktop.appearanceLightChromeTheme.fonts]
-
 [desktop.appearanceLightChromeTheme.semanticColors]
 diffAdded = "#00c853"
 diffRemoved = "#ff5f38"
@@ -176,14 +159,10 @@ ink = "#f8f8f2"
 opaqueWindows = false
 surface = "#272822"
 
-[desktop.appearanceDarkChromeTheme.fonts]
-
 [desktop.appearanceDarkChromeTheme.semanticColors]
 diffAdded = "#86b42b"
 diffRemoved = "#c4265e"
 skill = "#8c6bc8"
-
-[hooks.state]
 
 [hooks.state."/Users/cgas/.codex/hooks.json:session_start:0:0"]
 trusted_hash = "sha256:5a6bc80af6b27ea839863b0445d4c4cee362abbf5cac4152363fa14c3a5e6a13"
@@ -227,10 +206,6 @@ enabled = false
 
 [mcp_servers.openaiDeveloperDocs]
 url = "https://developers.openai.com/mcp"
-
-[memories]
-generate_memories = false
-use_memories = false
 
 [apps.connector_openai_codex_document_control]
 enabled = false
