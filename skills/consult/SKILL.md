@@ -7,7 +7,7 @@ description: Use when ChatGPT consultation in the in-app Browser could materiall
 
 Do not use this skill to review pull requests unless the user explicitly asks to use `consult` for the PR review.
 
-Use `scripts/run-consult.mjs` to start a fresh ChatGPT consultation. The helper owns browser mechanics: project navigation, empty-composer enforcement, GitHub plugin attachment, optional image mode, Pro/GPT-5.6 Sol selection, prompt entry, and sending.
+Use `scripts/run-consult.mjs` to start a fresh ChatGPT consultation. The helper owns browser mechanics: project navigation, empty-composer enforcement, GitHub plugin attachment, optional image mode, thinking-level/model selection, prompt entry, and sending.
 
 ## Run the Helper
 
@@ -24,11 +24,14 @@ globalThis.consultSession = await scriptedConsult.startConsult({
   send: true,
   createImage: false,
   aspectRatio: null,
+  thinkingLevel: "pro",
 });
 nodeRepl.write(JSON.stringify(scriptedConsult.publicResult(consultSession)));
 ```
 
 Use `send: false` only to validate setup without entering or sending the prompt. For a visual deliverable, use `createImage: true` and pass the exact visible aspect-ratio label when needed.
+
+`thinkingLevel` defaults to `"pro"`, which selects Pro with GPT-5.6 Sol. Only choose a non-pro thinking level (`"instant"`, `"medium"`, `"high"`, or `"extra-high"`) when the user explicitly requests it.
 
 If authentication is required, keep the tab as a handoff and ask the user to sign in. Never handle passwords, OTPs, or CAPTCHAs. Treat thrown errors as failed hard gates; do not bypass the helper.
 

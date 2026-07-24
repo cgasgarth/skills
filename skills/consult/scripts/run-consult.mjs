@@ -146,43 +146,64 @@ async function enableImageMode(tab, composerName, aspectRatio) {
   }
 }
 
-async function ensurePro(tab) {
-  const main = tab.playwright.locator("main");
-  const pro = main.getByRole("button", { name: "Pro", exact: true });
+const THINKING_LEVELS = new Map([
+  ["instant", "Instant 5.5"],
+  ["medium", "Medium"],
+  ["high", "High"],
+  ["extra high", "Extra High"],
+  ["extra-high", "Extra High"],
+  ["pro", "Pro"],
+]);
 
-  if (!await visible(pro)) {
-    const activeLabels = ["Latest", "Instant", "Thinking", "Medium", "High", "Extra High"];
-    let activeMode = null;
-    for (const label of activeLabels) {
-      const candidate = main.getByRole("button", { name: label, exact: true });
-      if (await visible(candidate)) {
-        activeMode = candidate;
-        break;
-      }
+function normalizeThinkingLevel(value) {
+  const normalizedValue = String(value).normalize("NFKC").trim().toLowerCase();
+  const label = THINKING_LEVELS.get(normalizedValue);
+  if (!label) {
+    throw new Error(`Unsupported thinkingLevel ${JSON.stringify(value)}. Expected instant, medium, high, extra-high, or pro.`);
+  }
+  return { value: normalizedValue, label };
+}
+
+async function ensureThinkingLevel(tab, thinkingLevel = "pro") {
+  const requested = normalizeThinkingLevel(thinkingLevel);
+  const main = tab.playwright.locator("main");
+  const activeLabels = ["Instant 5.5", "Medium", "High", "Extra High", "Pro"];
+  let activeMode = null;
+  for (const label of activeLabels) {
+    const candidate = main.getByRole("button", { name: label, exact: true });
+    if (await visible(candidate)) {
+      activeMode = candidate;
+      break;
     }
-    if (!activeMode) throw new Error("Pro is absent and the active model-mode button could not be identified.");
+  }
+  if (!activeMode) throw new Error("The active thinking-level button could not be identified.");
+
+  if (requested.label !== (await activeMode.textContent() || "").trim()) {
     await activeMode.click();
     await tab.playwright.domSnapshot();
-    const proOption = tab.playwright.getByRole("menuitemradio", { name: "Pro", exact: true });
-    await (await requireOne(proOption, "Pro mode option")).click();
+    const option = tab.playwright.getByRole("menuitemradio", { name: requested.label, exact: true });
+    await (await requireOne(option, `${requested.label} thinking-level option`)).click();
     await tab.playwright.domSnapshot();
-    if (!await visible(pro)) throw new Error("Pro was not visibly selected.");
   }
 
-  await pro.click();
+  const selected = main.getByRole("button", { name: requested.label, exact: true });
+  if (!await visible(selected)) throw new Error(`${requested.label} was not visibly selected.`);
+
+  if (requested.value !== "pro") return { thinkingLevel: requested.value, mode: requested.label };
+
+  await selected.click();
   await tab.playwright.domSnapshot();
   const modelMenu = tab.playwright.getByRole("menuitem", { name: "GPT-5.6 Sol", exact: true });
   await (await requireOne(modelMenu, "GPT-5.6 Sol model menu")).click();
   await tab.playwright.domSnapshot();
   const solRadio = tab.playwright.getByRole("menuitemradio", { name: "GPT-5.6 Sol", exact: true });
-  const uniqueSolRadio = await requireOne(solRadio, "GPT-5.6 Sol model option");
-  await uniqueSolRadio.click();
+  await (await requireOne(solRadio, "GPT-5.6 Sol model option")).click();
   await tab.playwright.domSnapshot();
-  if (!await visible(pro)) throw new Error("Pro was not visibly selected after choosing GPT-5.6 Sol.");
-  return { mode: "Pro", model: "GPT-5.6 Sol" };
+  if (!await visible(selected)) throw new Error("Pro was not visibly selected after choosing GPT-5.6 Sol.");
+  return { thinkingLevel: requested.value, mode: "Pro", model: "GPT-5.6 Sol" };
 }
 
-export async function startConsult({ iab, project, prompt, send = true, createImage = false, aspectRatio = null }) {
+export async function startConsult({ iab, project, prompt, send = true, createImage = false, aspectRatio = null, thinkingLevel = "pro" }) {
   if (!iab || !project || !prompt) throw new Error("iab, project, and prompt are required.");
   const tab = await iab.tabs.new();
   await tab.goto(CHATGPT_URL);
@@ -200,7 +221,7 @@ export async function startConsult({ iab, project, prompt, send = true, createIm
 
   await attachGitHub(tab, opened.composerName);
   if (createImage) await enableImageMode(tab, opened.composerName, aspectRatio);
-  const modelSelection = await ensurePro(tab);
+  const modelSelection = await ensureThinkingLevel(tab, thinkingLevel);
 
   if (!send) return {
     status: "setup_verified_not_sent",
