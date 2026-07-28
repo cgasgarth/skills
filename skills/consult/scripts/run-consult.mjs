@@ -101,7 +101,7 @@ async function composer(tab, composerName) {
   );
 }
 
-async function attachGitHub(tab, composerName) {
+async function attachGitHubPlugin(tab, composerName) {
   const box = await composer(tab, composerName);
   const existingText = (await box.textContent() || "").trim();
   if (existingText) {
@@ -203,7 +203,7 @@ async function ensureThinkingLevel(tab, thinkingLevel = "pro") {
   return { thinkingLevel: requested.value, mode: "Pro", model: "GPT-5.6 Sol" };
 }
 
-export async function startConsult({ iab, project, prompt, send = true, createImage = false, aspectRatio = null, thinkingLevel = "pro" }) {
+export async function startConsult({ iab, project, prompt, send = true, createImage = false, aspectRatio = null, thinkingLevel = "pro", attachGitHub = true }) {
   if (!iab || !project || !prompt) throw new Error("iab, project, and prompt are required.");
   const tab = await iab.tabs.new();
   await tab.goto(CHATGPT_URL);
@@ -219,7 +219,7 @@ export async function startConsult({ iab, project, prompt, send = true, createIm
   }
   if (opened.status !== "project_open") return { ...opened, tab };
 
-  await attachGitHub(tab, opened.composerName);
+  if (attachGitHub) await attachGitHubPlugin(tab, opened.composerName);
   if (createImage) await enableImageMode(tab, opened.composerName, aspectRatio);
   const modelSelection = await ensureThinkingLevel(tab, thinkingLevel);
 
@@ -228,7 +228,7 @@ export async function startConsult({ iab, project, prompt, send = true, createIm
     project: selectedProject,
     requestedProject,
     usedFallbackProject,
-    githubAttached: true,
+    githubAttached: attachGitHub,
     ...modelSelection,
     tab,
   };
@@ -236,8 +236,10 @@ export async function startConsult({ iab, project, prompt, send = true, createIm
   const box = await composer(tab, opened.composerName);
   await box.type(prompt);
 
-  const githubPill = box.getByText("GitHub", { exact: true });
-  if (!await visible(githubPill)) throw new Error("GitHub pill was not visible immediately before send.");
+  if (attachGitHub) {
+    const githubPill = box.getByText("GitHub", { exact: true });
+    if (!await visible(githubPill)) throw new Error("GitHub pill was not visible immediately before send.");
+  }
   const sendButton = tab.playwright.getByRole("button", { name: "Send prompt", exact: true });
   const uniqueSend = await requireOne(sendButton, "Send prompt button");
   if (!await uniqueSend.isEnabled()) throw new Error("Send prompt button is disabled.");
@@ -248,7 +250,7 @@ export async function startConsult({ iab, project, prompt, send = true, createIm
     project: selectedProject,
     requestedProject,
     usedFallbackProject,
-    githubAttached: true,
+    githubAttached: attachGitHub,
     ...modelSelection,
     tab,
     url: await tab.url(),

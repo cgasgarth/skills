@@ -1,6 +1,6 @@
 ---
 name: consult
-description: Use when ChatGPT consultation in the in-app Browser could materially improve hard coding, debugging, design, planning, math, science, research, or reasoning. Runs a guarded helper that opens the matching ChatGPT Project, attaches the GitHub plugin, selects Pro with GPT-5.6 Sol, and sends a purpose-built prompt.
+description: Use when ChatGPT consultation in the in-app Browser could materially improve hard coding, debugging, design, planning, math, science, research, or reasoning. Runs a guarded helper that opens the matching ChatGPT Project, attaches the GitHub plugin by default, selects Pro with GPT-5.6 Sol, and sends a purpose-built prompt.
 ---
 
 # Consult
@@ -25,9 +25,12 @@ globalThis.consultSession = await scriptedConsult.startConsult({
   createImage: false,
   aspectRatio: null,
   thinkingLevel: "pro",
+  attachGitHub: true,
 });
 nodeRepl.write(JSON.stringify(scriptedConsult.publicResult(consultSession)));
 ```
+
+The helper attaches GitHub by default. Pass `attachGitHub: false` to leave the plugin unattached; in that mode, omit GitHub-specific instructions from the prompt.
 
 Use `send: false` only to validate setup without entering or sending the prompt. For a visual deliverable, use `createImage: true` and pass the exact visible aspect-ratio label when needed.
 
@@ -43,7 +46,7 @@ If the requested project is missing, the helper must automatically retry in the 
 
 ## Build the Prompt
 
-Write one outcome-first prompt tailored to the task. Do not forward the user's words unchanged. Begin with:
+Write one outcome-first prompt tailored to the task. Do not forward the user's words unchanged. When GitHub is attached (the default), begin with:
 
 ```text
 Use the attached GitHub plugin.
@@ -51,23 +54,23 @@ Use the attached GitHub plugin.
 
 Include the goal, success criteria, concrete repository/file/test/error/design evidence, constraints and assumptions to challenge, and exact desired output.
 
-The GitHub plugin can:
+When GitHub is attached, the GitHub plugin can:
 
 - Read the repository's `main` branch, pull requests, and issues.
 - Create, edit, and delete issues with full issue write access.
 
-The GitHub plugin cannot:
+When GitHub is attached, the GitHub plugin cannot:
 
 - Read branches other than `main`.
 - Create milestones.
 
-Default to GitHub issues as the persistent outcome. Roughly 95% of consultations should directly create, edit, split, link, or delete issues through the plugin rather than merely return prose or draft issue text. State this outcome explicitly in the prompt:
+When GitHub is attached, default to GitHub issues as the persistent outcome. Roughly 95% of consultations should directly create, edit, split, link, or delete issues through the plugin rather than merely return prose or draft issue text. State this outcome explicitly in the prompt:
 
 ```text
 Use the attached GitHub plugin for repository reads and issue mutations. Persist the consultation outcome directly in GitHub by creating, editing, splitting, linking, or deleting the necessary issues; do not only return recommendations or draft issue text.
 ```
 
-For issue work:
+For issue work when GitHub is attached:
 
 - Require inspection of `main`, relevant pull requests, and existing issues before mutation.
 - Make each issue PR-sized; split work requiring multiple PRs.
