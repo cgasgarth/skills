@@ -21,6 +21,7 @@ globalThis.consultSession = await scriptedConsult.startConsult({
   iab,
   project: "<project>",
   prompt: "<prompt>",
+  paths: ["/full/system/path/to/file-or-folder"],
   send: true,
   createImage: false,
   aspectRatio: null,
@@ -32,7 +33,23 @@ nodeRepl.write(JSON.stringify(scriptedConsult.publicResult(consultSession)));
 
 The helper attaches GitHub by default. Pass `attachGitHub: false` to leave the plugin unattached; in that mode, omit GitHub-specific instructions from the prompt.
 
-Use `send: false` only to validate setup without entering or sending the prompt. For a visual deliverable, use `createImage: true` and pass the exact visible aspect-ratio label when needed.
+`paths` is optional and accepts one absolute system path or an array of absolute paths. Files are uploaded from private temporary snapshots so later filesystem changes cannot cross the limit; their bytes and names stay unchanged unless duplicate names need numeric suffixes. Folders are automatically ZIP archived. Every upload obeys a hard 512 MB per-file limit; oversized folders become numbered ZIP archives, and an individual file that cannot fit becomes numbered ZIP chunk archives with reconstruction manifests. Multiple prepared files are uploaded together. The helper removes temporary copies and archives after ChatGPT accepts them.
+
+To add files or an optional follow-up prompt to the already-open consultation, reuse the session instead of starting a new thread:
+
+```js
+globalThis.consultFollowUp = await scriptedConsult.sendToExistingConsult({
+  session: consultSession,
+  paths: ["/full/system/path/to/file-or-folder"],
+  prompt: "<optional follow-up prompt>",
+  send: true,
+});
+nodeRepl.write(JSON.stringify(scriptedConsult.publicResult(consultFollowUp)));
+```
+
+Omit `prompt` to send only the attachments. Pass `send: false` to prepare the existing composer without submitting it. The helper refuses to overwrite an existing draft.
+
+Use `send: false` only to validate setup without typing or sending the prompt. When `paths` are supplied, the files remain attached to the unsent draft. For a visual deliverable, use `createImage: true` and pass the exact visible aspect-ratio label when needed.
 
 `thinkingLevel` defaults to `"pro"`, which selects Pro with GPT-5.6 Sol. Only choose a non-pro thinking level (`"instant"`, `"medium"`, `"high"`, or `"extra-high"`) when the user explicitly requests it.
 
@@ -90,4 +107,4 @@ The helper ends immediately after sending and must not poll, refresh, extract th
 
 When the task requires ChatGPT's answer, wait outside the helper through the normal Browser workflow. Pro can be slow: do not treat it as slow before 30 minutes; refresh and verify progress at 40 minutes and again at one hour. Never invoke `Answer now` or stop a response merely because it is slow.
 
-Use the same ChatGPT thread only for a same-topic follow-up. Because the helper does not yet support same-thread follow-ups, ask before creating a replacement consultation thread. Synthesize and evaluate returned advice, and independently verify any GitHub mutations.
+Use `sendToExistingConsult` for same-topic follow-ups in the current ChatGPT thread. Start a new consultation for a new topic. Synthesize and evaluate returned advice, and independently verify any GitHub mutations.

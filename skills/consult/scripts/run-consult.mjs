@@ -1,3 +1,5 @@
+import { prepareUploadPaths } from "./prepare-uploads.mjs";
+
 const CHATGPT_URL = "https://chatgpt.com/";
 const FALLBACK_PROJECT = "Consult";
 
@@ -99,6 +101,64 @@ async function composer(tab, composerName) {
     tab.playwright.getByRole("textbox", { name: composerName, exact: true }),
     `project composer ${composerName}`,
   );
+}
+
+async function activeConversationComposer(tab) {
+  const boxes = tab.playwright.locator("main").getByRole("textbox").filter({ visible: true });
+  return requireOne(boxes, "active conversation composer");
+}
+
+async function emptyComposer(box) {
+  const existingText = (await box.textContent() || "").trim();
+  if (existingText) {
+    throw new Error("The target ChatGPT composer already contains a draft; refusing to overwrite it.");
+  }
+}
+
+async function chooseLocalFiles(tab, paths) {
+  const add = tab.playwright.getByRole("button", { name: "Add files and more", exact: true });
+  await (await requireOne(add, "Add files and more button")).click();
+  await tab.playwright.domSnapshot();
+  const upload = tab.playwright.getByText("Upload from computer", { exact: true });
+  const uniqueUpload = await requireOne(upload, "Upload from computer option");
+  const chooserPromise = tab.playwright.waitForEvent("filechooser", { timeoutMs: 10000 });
+  await uniqueUpload.click();
+  const chooser = await chooserPromise;
+  if (!chooser.isMultiple() && paths.length > 1) {
+    throw new Error("ChatGPT's file chooser does not allow multiple files in this session.");
+  }
+  await chooser.setFiles(paths, { timeoutMs: 120000 });
+}
+
+async function waitForUploadReady(tab) {
+  const sendButton = tab.playwright.getByRole("button", { name: "Send prompt", exact: true });
+  await sendButton.waitFor({ state: "visible", timeoutMs: 120000 });
+  const deadline = Date.now() + 120000;
+  while (!await sendButton.isEnabled()) {
+    if (Date.now() >= deadline) throw new Error("ChatGPT did not finish preparing the file upload within 120 seconds.");
+    await tab.playwright.waitForTimeout(250);
+  }
+}
+
+async function attachPreparedFiles(tab, prepared) {
+  if (prepared.files.length === 0) return;
+  await chooseLocalFiles(tab, prepared.files);
+  await tab.playwright.domSnapshot();
+  for (const source of prepared.sources) {
+    for (const upload of source.uploads) {
+      const attachment = tab.playwright.getByRole("group", { name: upload.name, exact: true });
+      await attachment.waitFor({ state: "visible", timeoutMs: 120000 });
+      await requireOne(attachment, `uploaded attachment ${upload.name}`);
+    }
+  }
+  await waitForUploadReady(tab);
+}
+
+async function sendCurrentComposer(tab) {
+  const sendButton = tab.playwright.getByRole("button", { name: "Send prompt", exact: true });
+  const uniqueSend = await requireOne(sendButton, "Send prompt button");
+  if (!await uniqueSend.isEnabled()) throw new Error("Send prompt button is disabled.");
+  await uniqueSend.click();
 }
 
 async function attachGitHubPlugin(tab, composerName) {
@@ -203,58 +263,96 @@ async function ensureThinkingLevel(tab, thinkingLevel = "pro") {
   return { thinkingLevel: requested.value, mode: "Pro", model: "GPT-5.6 Sol" };
 }
 
-export async function startConsult({ iab, project, prompt, send = true, createImage = false, aspectRatio = null, thinkingLevel = "pro", attachGitHub = true }) {
+export async function startConsult({ iab, project, prompt, paths = [], send = true, createImage = false, aspectRatio = null, thinkingLevel = "pro", attachGitHub = true, maxUploadBytes }) {
   if (!iab || !project || !prompt) throw new Error("iab, project, and prompt are required.");
-  const tab = await iab.tabs.new();
-  await tab.goto(CHATGPT_URL);
+  const prepared = prepareUploadPaths(paths, { maxUploadBytes });
+  let tab;
+  try {
+    tab = await iab.tabs.new();
+    await tab.goto(CHATGPT_URL);
 
-  const requestedProject = project;
-  let selectedProject = project;
-  let usedFallbackProject = false;
-  let opened = await openProject(tab, selectedProject);
-  if (opened.status === "project_not_found" && normalized(selectedProject) !== normalized(FALLBACK_PROJECT)) {
-    selectedProject = FALLBACK_PROJECT;
-    usedFallbackProject = true;
-    opened = await openProject(tab, selectedProject);
+    const requestedProject = project;
+    let selectedProject = project;
+    let usedFallbackProject = false;
+    let opened = await openProject(tab, selectedProject);
+    if (opened.status === "project_not_found" && normalized(selectedProject) !== normalized(FALLBACK_PROJECT)) {
+      selectedProject = FALLBACK_PROJECT;
+      usedFallbackProject = true;
+      opened = await openProject(tab, selectedProject);
+    }
+    if (opened.status !== "project_open") return { ...opened, tab };
+
+    await emptyComposer(await composer(tab, opened.composerName));
+    if (attachGitHub) await attachGitHubPlugin(tab, opened.composerName);
+    if (createImage) await enableImageMode(tab, opened.composerName, aspectRatio);
+    const modelSelection = await ensureThinkingLevel(tab, thinkingLevel);
+    const box = await composer(tab, opened.composerName);
+    await attachPreparedFiles(tab, prepared);
+
+    if (!send) return {
+      status: "setup_verified_not_sent",
+      project: selectedProject,
+      requestedProject,
+      usedFallbackProject,
+      githubAttached: attachGitHub,
+      attachments: prepared.sources,
+      ...modelSelection,
+      tab,
+    };
+
+    await box.type(prompt);
+
+    if (attachGitHub) {
+      const githubPill = box.getByText("GitHub", { exact: true });
+      if (!await visible(githubPill)) throw new Error("GitHub pill was not visible immediately before send.");
+    }
+    await sendCurrentComposer(tab);
+
+    return {
+      status: "sent",
+      project: selectedProject,
+      requestedProject,
+      usedFallbackProject,
+      githubAttached: attachGitHub,
+      attachments: prepared.sources,
+      ...modelSelection,
+      tab,
+      url: await tab.url(),
+    };
+  } finally {
+    prepared.cleanup();
   }
-  if (opened.status !== "project_open") return { ...opened, tab };
+}
 
-  if (attachGitHub) await attachGitHubPlugin(tab, opened.composerName);
-  if (createImage) await enableImageMode(tab, opened.composerName, aspectRatio);
-  const modelSelection = await ensureThinkingLevel(tab, thinkingLevel);
-
-  if (!send) return {
-    status: "setup_verified_not_sent",
-    project: selectedProject,
-    requestedProject,
-    usedFallbackProject,
-    githubAttached: attachGitHub,
-    ...modelSelection,
-    tab,
-  };
-
-  const box = await composer(tab, opened.composerName);
-  await box.type(prompt);
-
-  if (attachGitHub) {
-    const githubPill = box.getByText("GitHub", { exact: true });
-    if (!await visible(githubPill)) throw new Error("GitHub pill was not visible immediately before send.");
+export async function sendToExistingConsult({ session, tab = session?.tab, paths = [], prompt = "", send = true, maxUploadBytes }) {
+  if (!tab) throw new Error("An existing consult session or tab is required.");
+  if (!prompt && (typeof paths === "string" ? !paths : paths.length === 0)) {
+    throw new Error("Provide at least one attachment path or a prompt for the existing session.");
   }
-  const sendButton = tab.playwright.getByRole("button", { name: "Send prompt", exact: true });
-  const uniqueSend = await requireOne(sendButton, "Send prompt button");
-  if (!await uniqueSend.isEnabled()) throw new Error("Send prompt button is disabled.");
-  await uniqueSend.click();
+  const prepared = prepareUploadPaths(paths, { maxUploadBytes });
+  try {
+    const box = await activeConversationComposer(tab);
+    await emptyComposer(box);
+    await attachPreparedFiles(tab, prepared);
+    if (prompt) await box.type(prompt);
 
-  return {
-    status: "sent",
-    project: selectedProject,
-    requestedProject,
-    usedFallbackProject,
-    githubAttached: attachGitHub,
-    ...modelSelection,
-    tab,
-    url: await tab.url(),
-  };
+    if (!send) return {
+      status: "existing_session_prepared_not_sent",
+      attachments: prepared.sources,
+      tab,
+      url: await tab.url(),
+    };
+
+    await sendCurrentComposer(tab);
+    return {
+      status: "sent_to_existing_session",
+      attachments: prepared.sources,
+      tab,
+      url: await tab.url(),
+    };
+  } finally {
+    prepared.cleanup();
+  }
 }
 
 export function publicResult(session) {
