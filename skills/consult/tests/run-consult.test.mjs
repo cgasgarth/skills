@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { ensureChatMode } from "../scripts/run-consult.mjs";
+import { ensureChatMode, sendToExistingConsult } from "../scripts/run-consult.mjs";
 
 function modeTab({ checked = false, authenticationRequired = false, missing = false } = {}) {
   let chatChecked = checked;
@@ -85,5 +85,55 @@ describe("ensureChatMode", () => {
     const fixture = modeTab({ missing: true });
 
     expect(ensureChatMode(fixture.tab)).rejects.toThrow("did not expose");
+  });
+});
+
+describe("sendToExistingConsult", () => {
+  it("does not inspect or change the Chat/Work surface for a follow-up", async () => {
+    let typedPrompt = "";
+    const box = {
+      async count() {
+        return 1;
+      },
+      filter() {
+        return this;
+      },
+      async textContent() {
+        return "";
+      },
+      async type(value) {
+        typedPrompt = value;
+      },
+    };
+    const tab = {
+      playwright: {
+        locator(selector) {
+          expect(selector).toBe("main");
+          return {
+            getByRole(role) {
+              expect(role).toBe("textbox");
+              return box;
+            },
+          };
+        },
+      },
+      async url() {
+        return "https://chatgpt.com/c/existing";
+      },
+    };
+
+    const result = await sendToExistingConsult({
+      tab,
+      prompt: "Follow up without changing modes.",
+      send: false,
+    });
+
+    expect(typedPrompt).toBe("Follow up without changing modes.");
+    expect(result).toEqual({
+      status: "existing_session_prepared_not_sent",
+      attachments: [],
+      tab,
+      url: "https://chatgpt.com/c/existing",
+    });
   });
 });

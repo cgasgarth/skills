@@ -367,8 +367,6 @@ export async function sendToExistingConsult({ session, tab = session?.tab, paths
   }
   const prepared = prepareUploadPaths(paths, { maxUploadBytes });
   try {
-    const surfaceSelection = await ensureChatMode(tab);
-    if (surfaceSelection.status === "authentication_required") return { ...surfaceSelection, tab };
     const box = await activeConversationComposer(tab);
     await emptyComposer(box);
     await attachPreparedFiles(tab, prepared);
@@ -377,7 +375,6 @@ export async function sendToExistingConsult({ session, tab = session?.tab, paths
     if (!send) return {
       status: "existing_session_prepared_not_sent",
       attachments: prepared.sources,
-      chatSurface: surfaceSelection.chatSurface,
       tab,
       url: await tab.url(),
     };
@@ -386,7 +383,6 @@ export async function sendToExistingConsult({ session, tab = session?.tab, paths
     return {
       status: "sent_to_existing_session",
       attachments: prepared.sources,
-      chatSurface: surfaceSelection.chatSurface,
       tab,
       url: await tab.url(),
     };
