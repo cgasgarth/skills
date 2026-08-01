@@ -7,7 +7,7 @@ description: Use when ChatGPT consultation in the in-app Browser could materiall
 
 Do not use this skill to review pull requests unless the user explicitly asks to use `consult` for the PR review.
 
-Use `scripts/run-consult.mjs` to start a fresh ChatGPT consultation. The helper owns browser mechanics: project navigation, empty-composer enforcement, GitHub plugin attachment, optional image mode, thinking-level/model selection, prompt entry, and sending.
+Use `scripts/run-consult.mjs` to start a fresh ChatGPT consultation. The helper owns browser mechanics: Chat-surface selection, project navigation, empty-composer enforcement, GitHub plugin attachment, optional image mode, thinking-level/model selection, prompt entry, and sending.
 
 ## Run the Helper
 
@@ -32,6 +32,8 @@ nodeRepl.write(JSON.stringify(scriptedConsult.publicResult(consultSession)));
 ```
 
 The helper attaches GitHub by default. Pass `attachGitHub: false` to leave the plugin unattached; in that mode, omit GitHub-specific instructions from the prompt.
+
+ChatGPT exposes separate `Chat` and `Work` surfaces. The helper always verifies that `Chat` is selected, switches from `Work` when necessary, and fails closed if the Chat surface cannot be confirmed. This applies to both new consultations and `sendToExistingConsult` follow-ups.
 
 `paths` is optional and accepts one absolute system path or an array of absolute paths. Files are uploaded from private temporary snapshots so later filesystem changes cannot cross the limit; their bytes and names stay unchanged unless duplicate names need numeric suffixes. Folders are automatically ZIP archived. Every upload obeys a hard 512 MB per-file limit; oversized folders become numbered ZIP archives, and an individual file that cannot fit becomes numbered ZIP chunk archives with reconstruction manifests. Multiple prepared files are uploaded together. The helper removes temporary copies and archives after ChatGPT accepts them.
 

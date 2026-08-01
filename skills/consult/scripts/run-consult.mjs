@@ -18,6 +18,37 @@ async function visible(locator) {
   return count === 1 && await locator.isVisible();
 }
 
+export async function ensureChatMode(tab) {
+  await tab.playwright.domSnapshot();
+  const surface = tab.playwright.getByRole("radiogroup", {
+    name: "Select chat surface",
+    exact: true,
+  });
+  try {
+    await surface.waitFor({ state: "visible", timeoutMs: 15000 });
+  } catch {
+    const snapshot = await tab.playwright.domSnapshot();
+    if (/\bLog in\b|\bSign up\b/i.test(snapshot)) return { status: "authentication_required" };
+    throw new Error("ChatGPT did not expose the Chat/Work surface selector within 15 seconds.");
+  }
+  await requireOne(surface, "Chat/Work surface selector");
+
+  const chat = surface.getByRole("radio", { name: "Chat", exact: true });
+  await requireOne(chat, "Chat surface option");
+  if (await chat.getAttribute("aria-checked") !== "true") {
+    await chat.click();
+    await tab.playwright.domSnapshot();
+  }
+
+  if (
+    await chat.getAttribute("aria-checked") !== "true"
+    || !await chat.isVisible()
+  ) {
+    throw new Error("ChatGPT Chat mode could not be selected.");
+  }
+  return { status: "chat_selected", chatSurface: "chat" };
+}
+
 async function actualProjectLabel(tab, requested) {
   const wanted = normalized(requested);
   const labels = await tab.playwright.evaluate((target) => {
@@ -271,6 +302,9 @@ export async function startConsult({ iab, project, prompt, paths = [], send = tr
     tab = await iab.tabs.new();
     await tab.goto(CHATGPT_URL);
 
+    const surfaceSelection = await ensureChatMode(tab);
+    if (surfaceSelection.status === "authentication_required") return { ...surfaceSelection, tab };
+
     const requestedProject = project;
     let selectedProject = project;
     let usedFallbackProject = false;
@@ -296,6 +330,7 @@ export async function startConsult({ iab, project, prompt, paths = [], send = tr
       usedFallbackProject,
       githubAttached: attachGitHub,
       attachments: prepared.sources,
+      chatSurface: surfaceSelection.chatSurface,
       ...modelSelection,
       tab,
     };
@@ -315,6 +350,7 @@ export async function startConsult({ iab, project, prompt, paths = [], send = tr
       usedFallbackProject,
       githubAttached: attachGitHub,
       attachments: prepared.sources,
+      chatSurface: surfaceSelection.chatSurface,
       ...modelSelection,
       tab,
       url: await tab.url(),
@@ -331,6 +367,8 @@ export async function sendToExistingConsult({ session, tab = session?.tab, paths
   }
   const prepared = prepareUploadPaths(paths, { maxUploadBytes });
   try {
+    const surfaceSelection = await ensureChatMode(tab);
+    if (surfaceSelection.status === "authentication_required") return { ...surfaceSelection, tab };
     const box = await activeConversationComposer(tab);
     await emptyComposer(box);
     await attachPreparedFiles(tab, prepared);
@@ -339,6 +377,7 @@ export async function sendToExistingConsult({ session, tab = session?.tab, paths
     if (!send) return {
       status: "existing_session_prepared_not_sent",
       attachments: prepared.sources,
+      chatSurface: surfaceSelection.chatSurface,
       tab,
       url: await tab.url(),
     };
@@ -347,6 +386,7 @@ export async function sendToExistingConsult({ session, tab = session?.tab, paths
     return {
       status: "sent_to_existing_session",
       attachments: prepared.sources,
+      chatSurface: surfaceSelection.chatSurface,
       tab,
       url: await tab.url(),
     };
