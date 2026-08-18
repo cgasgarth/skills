@@ -1,4 +1,0 @@
-interface:
-  display_name: "TypeScript LSP"
-  short_description: "Query TypeScript 7 code intelligence"
-  default_prompt: "Use $typescript-lsp to inspect this TypeScript symbol before editing it."
