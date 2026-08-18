@@ -5,10 +5,10 @@ description: Send generic requests to the TypeScript 7 native language server fo
 
 # TypeScript LSP
 
-Use the generic request client:
+Use the generic request client. Resolve `scripts/request.mjs` relative to this skill directory:
 
 ```bash
-bun "$HOME/.codex/skills/typescript-lsp/scripts/request.mjs" FILE METHOD PARAMS_JSON
+bun scripts/request.mjs FILE METHOD PARAMS_JSON
 ```
 
 `FILE` anchors and opens the TypeScript project. `PARAMS_JSON` is the method's standard LSP params object; use `{}` when empty or `-` to read JSON from stdin. The client injects `textDocument.uri` when a text-document request omits it. LSP lines and characters are zero-based. Set `TS_LSP_TSC` only when the TypeScript 7 `tsc` is not on `PATH`.
@@ -16,7 +16,7 @@ bun "$HOME/.codex/skills/typescript-lsp/scripts/request.mjs" FILE METHOD PARAMS_
 Example:
 
 ```bash
-bun "$HOME/.codex/skills/typescript-lsp/scripts/request.mjs" src/example.ts textDocument/hover \
+bun scripts/request.mjs src/example.ts textDocument/hover \
   '{"position":{"line":41,"character":16}}'
 ```
 
