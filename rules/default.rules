@@ -1,2 +1,0 @@
-prefix_rule(pattern=["tmux"], decision="allow")
-prefix_rule(pattern=["uv", "run", "pytest"], decision="allow")

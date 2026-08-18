@@ -140,7 +140,7 @@ async function activeConversationComposer(tab) {
 }
 
 async function emptyComposer(box) {
-  const existingText = (await box.textContent() || "").trim();
+  const existingText = (await box.innerText() || "").trim();
   if (existingText) {
     throw new Error("The target ChatGPT composer already contains a draft; refusing to overwrite it.");
   }
@@ -187,8 +187,13 @@ async function attachPreparedFiles(tab, prepared) {
 
 async function sendCurrentComposer(tab) {
   const sendButton = tab.playwright.getByRole("button", { name: "Send prompt", exact: true });
+  await sendButton.waitFor({ state: "visible", timeoutMs: 30000 });
   const uniqueSend = await requireOne(sendButton, "Send prompt button");
-  if (!await uniqueSend.isEnabled()) throw new Error("Send prompt button is disabled.");
+  const deadline = Date.now() + 30000;
+  while (!await uniqueSend.isEnabled()) {
+    if (Date.now() >= deadline) throw new Error("Send prompt button remained disabled for 30 seconds.");
+    await tab.playwright.waitForTimeout(250);
+  }
   await uniqueSend.click();
 }
 
@@ -389,6 +394,19 @@ export async function sendToExistingConsult({ session, tab = session?.tab, paths
   } finally {
     prepared.cleanup();
   }
+}
+
+export async function sendExpectedExistingDraft({ session, tab = session?.tab, expectedPrompt }) {
+  if (!tab) throw new Error("An existing consult session or tab is required.");
+  if (!expectedPrompt) throw new Error("An expected prompt is required.");
+  const box = await activeConversationComposer(tab);
+  const existingText = (await box.innerText() || "").trim();
+  const normalizeVisibleText = (value) => value.replace(/\s+/g, " ").trim();
+  if (normalizeVisibleText(existingText) !== normalizeVisibleText(expectedPrompt)) {
+    throw new Error("The staged ChatGPT draft does not exactly match the expected prompt; refusing to send it.");
+  }
+  await sendCurrentComposer(tab);
+  return { status: "sent_expected_existing_draft", tab, url: await tab.url() };
 }
 
 export function publicResult(session) {
