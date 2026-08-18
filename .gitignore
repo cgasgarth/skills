@@ -1,28 +1,7 @@
-# Ignore everything in the live Codex home by default. Unignore only
-# source-like files that are safe and useful to version.
+# Ignore the live Codex home except for personal instructions and skills.
 *
-
-# Repository files
 !.gitignore
-!README.md
-
-# Global Codex guidance
 !AGENTS.md
-
-# Codex settings. Keep auth.json ignored by default.
-!config.toml
-!browser/
-!browser/config.toml
-
-# Lightweight source/config directories
-!hooks.json
-!hooks/
-!hooks/**
-!rules/
-!rules/**
-rules/default.rules
-
-# User-authored skills and their helper agents/assets
 !skills/
 !skills/amazon-support-browser/
 !skills/amazon-support-browser/**
@@ -30,13 +9,3 @@ rules/default.rules
 !skills/consult/**
 !skills/typescript-lsp/
 !skills/typescript-lsp/**
-# User-authored Codex pets
-!pets/
-!pets/**
-
-# Never track generated/bundled skill mirrors even though skills/ is open.
-skills/.system/
-skills/codex-primary-runtime/
-
-# Never track runtime logs under hooks.
-hooks/*.log
