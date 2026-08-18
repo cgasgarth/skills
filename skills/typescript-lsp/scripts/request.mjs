@@ -3,15 +3,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-
-const METHODS = {
-  hover: "textDocument/hover",
-  definition: "textDocument/definition",
-  "type-definition": "textDocument/typeDefinition",
-  implementation: "textDocument/implementation",
-  references: "textDocument/references",
-};
+import { pathToFileURL } from "node:url";
 
 const LANGUAGES = {
   ".ts": "typescript",
@@ -24,9 +16,17 @@ const LANGUAGES = {
   ".cjs": "javascript",
 };
 
-function usage() {
-  return "Usage: query.mjs <hover|definition|type-definition|implementation|references> FILE SEARCH [OCCURRENCE]\n";
-}
+const TOKEN_TYPES = [
+  "namespace", "type", "class", "enum", "interface", "struct", "typeParameter",
+  "parameter", "variable", "property", "enumMember", "event", "function", "method",
+  "macro", "keyword", "modifier", "comment", "string", "number", "regexp", "operator",
+  "decorator", "label",
+];
+
+const TOKEN_MODIFIERS = [
+  "declaration", "definition", "readonly", "static", "deprecated", "abstract", "async",
+  "modification", "documentation", "defaultLibrary",
+];
 
 function stop(message) {
   throw new Error(message);
@@ -40,36 +40,20 @@ function rootFor(file) {
   return result.status === 0 ? result.stdout.trim() : path.dirname(file);
 }
 
-function positionOf(text, search, occurrence) {
-  let offset = -1;
-  let from = 0;
-  for (let index = 0; index < occurrence; index += 1) {
-    offset = text.indexOf(search, from);
-    if (offset < 0) stop(`Could not find occurrence ${occurrence} of ${JSON.stringify(search)}`);
-    from = offset + search.length;
-  }
-  const lines = text.slice(0, offset).split(/\r?\n/);
-  return { line: lines.length - 1, character: lines.at(-1).length };
-}
-
-function normalize(value) {
-  if (typeof value === "string" && value.startsWith("file:")) {
-    try {
-      return fileURLToPath(value);
-    } catch {
-      return value;
-    }
-  }
-  if (Array.isArray(value)) return value.map(normalize);
+function replacePlaceholders(value, fileUri, rootUri) {
+  if (value === "$FILE_URI") return fileUri;
+  if (value === "$ROOT_URI") return rootUri;
+  if (Array.isArray(value)) return value.map((item) => replacePlaceholders(item, fileUri, rootUri));
   if (value && typeof value === "object") {
-    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, normalize(item)]));
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, replacePlaceholders(item, fileUri, rootUri)]),
+    );
   }
   return value;
 }
 
 class Client {
   constructor(command, root) {
-    this.root = root;
     this.folder = { uri: pathToFileURL(root).href, name: path.basename(root) };
     this.child = spawn(command, ["--lsp", "--stdio"], {
       cwd: root,
@@ -92,14 +76,14 @@ class Client {
   read(chunk) {
     this.buffer = Buffer.concat([this.buffer, chunk]);
     while (true) {
-      const end = this.buffer.indexOf("\r\n\r\n");
-      if (end < 0) return;
-      const header = this.buffer.subarray(0, end).toString("ascii");
+      const headerEnd = this.buffer.indexOf("\r\n\r\n");
+      if (headerEnd < 0) return;
+      const header = this.buffer.subarray(0, headerEnd).toString("ascii");
       const length = Number(header.match(/Content-Length:\s*(\d+)/i)?.[1]);
       if (!Number.isInteger(length)) return this.rejectAll(new Error("Invalid LSP header"));
-      const bodyEnd = end + 4 + length;
+      const bodyEnd = headerEnd + 4 + length;
       if (this.buffer.length < bodyEnd) return;
-      const message = JSON.parse(this.buffer.subarray(end + 4, bodyEnd).toString("utf8"));
+      const message = JSON.parse(this.buffer.subarray(headerEnd + 4, bodyEnd).toString("utf8"));
       this.buffer = this.buffer.subarray(bodyEnd);
       this.message(message);
     }
@@ -171,18 +155,97 @@ class Client {
   }
 }
 
+function clientCapabilities() {
+  const links = { linkSupport: true };
+  return {
+    general: { positionEncodings: ["utf-16"] },
+    workspace: {
+      workspaceFolders: true,
+      workspaceEdit: {
+        documentChanges: true,
+        resourceOperations: ["create", "rename", "delete"],
+      },
+      fileOperations: { willRename: true },
+    },
+    textDocument: {
+      completion: {
+        contextSupport: true,
+        completionItem: {
+          snippetSupport: true,
+          documentationFormat: ["markdown", "plaintext"],
+          labelDetailsSupport: true,
+          resolveSupport: {
+            properties: ["documentation", "detail", "additionalTextEdits", "command"],
+          },
+        },
+      },
+      hover: { contentFormat: ["markdown", "plaintext"] },
+      signatureHelp: {
+        signatureInformation: {
+          documentationFormat: ["markdown", "plaintext"],
+          parameterInformation: { labelOffsetSupport: true },
+        },
+      },
+      definition: links,
+      typeDefinition: links,
+      implementation: links,
+      references: {},
+      documentHighlight: {},
+      documentSymbol: { hierarchicalDocumentSymbolSupport: true },
+      codeAction: {
+        codeActionLiteralSupport: {
+          codeActionKind: {
+            valueSet: [
+              "quickfix", "refactor", "refactor.extract", "refactor.inline", "refactor.rewrite",
+              "source", "source.organizeImports", "source.fixAll",
+            ],
+          },
+        },
+      },
+      codeLens: {},
+      formatting: {},
+      rangeFormatting: {},
+      onTypeFormatting: {},
+      rename: { prepareSupport: true },
+      foldingRange: { lineFoldingOnly: true },
+      selectionRange: {},
+      callHierarchy: {},
+      linkedEditingRange: {},
+      semanticTokens: {
+        requests: { range: true, full: true },
+        tokenTypes: TOKEN_TYPES,
+        tokenModifiers: TOKEN_MODIFIERS,
+        formats: ["relative"],
+      },
+      inlayHint: {},
+      diagnostic: { relatedDocumentSupport: true },
+      publishDiagnostics: { relatedInformation: true, versionSupport: true },
+    },
+  };
+}
+
 async function main() {
-  const [operation, fileArg, search, occurrenceArg = "1"] = process.argv.slice(2);
-  if (!(operation in METHODS) || !fileArg || search === undefined) stop(usage());
-  const occurrence = Number(occurrenceArg);
-  if (!Number.isInteger(occurrence) || occurrence < 1) stop("OCCURRENCE must be a positive integer");
+  const [fileArg, method, paramsArg = "{}"] = process.argv.slice(2);
+  if (!fileArg || !method) {
+    stop("Usage: request.mjs FILE METHOD PARAMS_JSON\nUse - for PARAMS_JSON to read stdin.");
+  }
+  if (["initialize", "initialized", "shutdown", "exit"].includes(method)) {
+    stop(`${method} is managed by the client`);
+  }
 
   const file = path.resolve(fileArg);
   const languageId = LANGUAGES[path.extname(file).toLowerCase()];
   if (!languageId) stop(`Unsupported file extension: ${path.extname(file)}`);
   const text = await readFile(file, "utf8");
-  const position = positionOf(text, search, occurrence);
   const root = rootFor(file);
+  const fileUri = pathToFileURL(file).href;
+  const rootUri = pathToFileURL(root).href;
+
+  const paramsText = paramsArg === "-" ? await readFile(0, "utf8") : paramsArg;
+  let params = replacePlaceholders(JSON.parse(paramsText), fileUri, rootUri);
+  if (method.includes("textDocument/") && !params.textDocument) {
+    params = { ...params, textDocument: { uri: fileUri } };
+  }
 
   const tsc = process.env.TS_LSP_TSC || "tsc";
   const version = spawnSync(tsc, ["--version"], { encoding: "utf8" });
@@ -190,31 +253,20 @@ async function main() {
   if (version.status !== 0 || major < 7) stop(`${tsc} must be TypeScript 7 or later`);
 
   const client = new Client(tsc, root);
-  const uri = pathToFileURL(file).href;
   try {
     await client.request("initialize", {
       processId: process.pid,
-      rootUri: pathToFileURL(root).href,
+      clientInfo: { name: "codex-typescript-lsp-skill", version: "1" },
+      rootUri,
       workspaceFolders: [client.folder],
-      capabilities: {
-        general: { positionEncodings: ["utf-16"] },
-        textDocument: {
-          definition: { linkSupport: true },
-          typeDefinition: { linkSupport: true },
-          implementation: { linkSupport: true },
-          hover: { contentFormat: ["markdown", "plaintext"] },
-        },
-      },
+      capabilities: clientCapabilities(),
     });
     client.notify("initialized", {});
     client.notify("textDocument/didOpen", {
-      textDocument: { uri, languageId, version: 1, text },
+      textDocument: { uri: fileUri, languageId, version: 1, text },
     });
-
-    const params = { textDocument: { uri }, position };
-    if (operation === "references") params.context = { includeDeclaration: true };
-    const result = await client.request(METHODS[operation], params);
-    process.stdout.write(`${JSON.stringify(normalize(result), null, 2)}\n`);
+    const result = await client.request(method, params);
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   } finally {
     await client.close();
   }
