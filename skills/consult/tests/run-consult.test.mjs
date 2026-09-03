@@ -149,9 +149,17 @@ describe("attachGitHubPlugin", () => {
             async count() {
               return available ? 1 : 0;
             },
-            async click() {
-              expect(available).toBe(true);
-              attached = true;
+            locator(selector) {
+              expect(selector).toBe("xpath=ancestor::div[@tabindex='0'][1]");
+              return {
+                async count() {
+                  return available ? 1 : 0;
+                },
+                async click() {
+                  expect(available).toBe(true);
+                  attached = true;
+                },
+              };
             },
           };
         },
@@ -270,14 +278,17 @@ describe("ensureThinkingLevel", () => {
     let activeLabel = "High";
     let menuOpen = false;
     let power = 2;
+    let solSelected = false;
     const button = (label) => ({
       async click() {
         menuOpen = !menuOpen;
       },
       async count() {
+        if (label === "Thinking effort") return menuOpen ? 1 : 0;
         return activeLabel === label ? 1 : 0;
       },
       async isVisible() {
+        if (label === "Thinking effort") return menuOpen;
         return activeLabel === label;
       },
     });
@@ -298,12 +309,23 @@ describe("ensureThinkingLevel", () => {
         activeLabel = ["Instant 5.5", "Medium", "High", "Extra High", "Pro"][power];
       },
     };
-    const modelMenu = {
+    const effortMenu = {
       async count() {
         return menuOpen ? 1 : 0;
       },
       async isVisible() {
         return menuOpen;
+      },
+    };
+    const solRadio = {
+      async click() {
+        solSelected = true;
+      },
+      async count() {
+        return menuOpen ? 1 : 0;
+      },
+      async getAttribute(name) {
+        return name === "aria-checked" && solSelected ? "true" : "false";
       },
     };
     const tab = {
@@ -315,9 +337,13 @@ describe("ensureThinkingLevel", () => {
           return slider;
         },
         getByRole(role, options) {
-          expect(role).toBe("menuitem");
-          expect(["/^Model /", "Model GPT-5.6 Sol"]).toContain(String(options.name));
-          return modelMenu;
+          if (role === "menu") {
+            expect(options).toEqual({ name: "Thinking effort", exact: true });
+            return effortMenu;
+          }
+          expect(role).toBe("menuitemradio");
+          expect(options).toEqual({ name: "GPT-5.6 Sol", exact: true });
+          return solRadio;
         },
       },
     };
@@ -327,10 +353,11 @@ describe("ensureThinkingLevel", () => {
       mode: "Pro",
       model: "GPT-5.6 Sol",
     });
-    expect({ activeLabel, menuOpen, power }).toEqual({
+    expect({ activeLabel, menuOpen, power, solSelected }).toEqual({
       activeLabel: "Pro",
       menuOpen: false,
       power: 4,
+      solSelected: true,
     });
   });
 });

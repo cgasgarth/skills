@@ -217,7 +217,9 @@ export async function attachGitHubPlugin(tab, composerName) {
     await tab.playwright.domSnapshot();
     github = tab.playwright.getByText("GitHub", { exact: true });
   }
-  await (await requireOne(github, "GitHub attachment option")).click();
+  await requireOne(github, "GitHub attachment option");
+  const githubAction = github.locator("xpath=ancestor::div[@tabindex='0'][1]");
+  await (await requireOne(githubAction, "GitHub attachment action")).click();
   await tab.playwright.domSnapshot();
 
   const pill = (await composer(tab, composerName)).getByText("GitHub", { exact: true });
@@ -303,41 +305,34 @@ export async function ensureThinkingLevel(tab, thinkingLevel = "pro") {
     await tab.playwright.domSnapshot();
   }
 
+  let effortMenu = tab.playwright.getByRole("menu", { name: "Thinking effort", exact: true });
+  if (!await visible(effortMenu)) {
+    const selected = main.getByRole("button", { name: requested.label, exact: true });
+    await (await requireOne(selected, `${requested.label} thinking-level button`)).click();
+    await tab.playwright.domSnapshot();
+    effortMenu = tab.playwright.getByRole("menu", { name: "Thinking effort", exact: true });
+  }
+  await requireOne(effortMenu, "Thinking effort menu");
+
+  if (requested.value === "pro") {
+    const solRadio = tab.playwright.getByRole("menuitemradio", { name: "GPT-5.6 Sol", exact: true });
+    await requireOne(solRadio, "GPT-5.6 Sol model option");
+    if (await solRadio.getAttribute("aria-checked") !== "true") {
+      await solRadio.click();
+      await tab.playwright.domSnapshot();
+    }
+    if (await solRadio.getAttribute("aria-checked") !== "true") {
+      throw new Error("GPT-5.6 Sol was not visibly selected.");
+    }
+  }
+
+  const closeEffortMenu = main.getByRole("button", { name: "Thinking effort", exact: true });
+  await (await requireOne(closeEffortMenu, "Thinking effort button")).click();
+  await tab.playwright.domSnapshot();
   const selected = main.getByRole("button", { name: requested.label, exact: true });
   if (!await visible(selected)) throw new Error(`${requested.label} was not visibly selected.`);
 
   if (requested.value !== "pro") return { thinkingLevel: requested.value, mode: requested.label };
-
-  let modelMenu = tab.playwright.getByRole("menuitem", { name: /^Model / });
-  if (!await visible(modelMenu)) {
-    await selected.click();
-    await tab.playwright.domSnapshot();
-    modelMenu = tab.playwright.getByRole("menuitem", { name: /^Model / });
-  }
-  await requireOne(modelMenu, "model menu");
-  let selectedModel = tab.playwright.getByRole("menuitem", {
-    name: "Model GPT-5.6 Sol",
-    exact: true,
-  });
-  if (!await visible(selectedModel)) {
-    await modelMenu.click();
-    await tab.playwright.domSnapshot();
-    const solRadio = tab.playwright.getByRole("menuitemradio", { name: "GPT-5.6 Sol", exact: true });
-    await (await requireOne(solRadio, "GPT-5.6 Sol model option")).click();
-    await tab.playwright.domSnapshot();
-    selectedModel = tab.playwright.getByRole("menuitem", {
-      name: "Model GPT-5.6 Sol",
-      exact: true,
-    });
-    if (!await visible(selectedModel)) throw new Error("GPT-5.6 Sol was not visibly selected.");
-  }
-  if (!await visible(selected)) throw new Error("Pro was not visibly selected after choosing GPT-5.6 Sol.");
-  modelMenu = tab.playwright.getByRole("menuitem", { name: /^Model / });
-  if (await visible(modelMenu)) {
-    const closeModelMenu = main.getByRole("button", { name: "Pro", exact: true });
-    await (await requireOne(closeModelMenu, "Pro thinking-level button")).click();
-    await tab.playwright.domSnapshot();
-  }
   return { thinkingLevel: requested.value, mode: "Pro", model: "GPT-5.6 Sol" };
 }
 
