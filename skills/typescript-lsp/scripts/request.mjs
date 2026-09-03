@@ -247,10 +247,18 @@ async function main() {
     params = { ...params, textDocument: { uri: fileUri } };
   }
 
-  const tsc = process.env.TS_LSP_TSC || "tsc";
-  const version = spawnSync(tsc, ["--version"], { encoding: "utf8" });
-  const major = Number(version.stdout.match(/Version\s+(\d+)/)?.[1]);
-  if (version.status !== 0 || major < 7) stop(`${tsc} must be TypeScript 7 or later`);
+  const localTsc = path.join(root, "node_modules", ".bin", "tsc");
+  const tscCandidates = process.env.TS_LSP_TSC
+    ? [process.env.TS_LSP_TSC]
+    : [localTsc, "tsc"];
+  const tsc = tscCandidates.find((candidate) => {
+    const version = spawnSync(candidate, ["--version"], { encoding: "utf8" });
+    const major = Number(version.stdout.match(/Version\s+(\d+)/)?.[1]);
+    return version.status === 0 && major >= 7;
+  });
+  if (!tsc) {
+    stop(`TypeScript 7 or later was not found in ${localTsc} or PATH`);
+  }
 
   const client = new Client(tsc, root);
   try {
