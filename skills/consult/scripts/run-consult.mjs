@@ -142,7 +142,10 @@ async function activeConversationComposer(tab) {
 async function emptyComposer(box) {
   const existingText = (await box.innerText() || "").trim();
   if (existingText) {
-    throw new Error("The target ChatGPT composer already contains a draft; refusing to overwrite it.");
+    await box.fill("");
+    if ((await box.innerText() || "").trim()) {
+      throw new Error("Could not clear the existing ChatGPT composer draft.");
+    }
   }
 }
 
@@ -197,7 +200,7 @@ async function sendCurrentComposer(tab) {
   await uniqueSend.click();
 }
 
-async function attachGitHubPlugin(tab, composerName) {
+export async function attachGitHubPlugin(tab, composerName) {
   const box = await composer(tab, composerName);
   const existingText = (await box.textContent() || "").trim();
   if (existingText) {
@@ -208,10 +211,11 @@ async function attachGitHubPlugin(tab, composerName) {
   const add = tab.playwright.getByRole("button", { name: "Add files and more", exact: true });
   await (await requireOne(add, "Add files and more button")).click();
   await tab.playwright.domSnapshot();
-  const github = tab.playwright.getByText("GitHub", { exact: true });
+  let github = tab.playwright.getByText("GitHub", { exact: true });
   if (await github.count() === 0) {
     await box.type("github");
     await tab.playwright.domSnapshot();
+    github = tab.playwright.getByText("GitHub", { exact: true });
   }
   await (await requireOne(github, "GitHub attachment option")).click();
   await tab.playwright.domSnapshot();
@@ -221,7 +225,7 @@ async function attachGitHubPlugin(tab, composerName) {
   if (!await pill.isVisible()) throw new Error("GitHub plugin pill was not visibly attached.");
 }
 
-async function enableImageMode(tab, composerName, aspectRatio) {
+export async function enableImageMode(tab, aspectRatio) {
   const add = tab.playwright.getByRole("button", { name: "Add files and more", exact: true });
   await (await requireOne(add, "Add files and more button")).click();
   await tab.playwright.domSnapshot();
@@ -229,56 +233,73 @@ async function enableImageMode(tab, composerName, aspectRatio) {
   await (await requireOne(create, "Create image option")).click();
   await tab.playwright.domSnapshot();
 
-  const pill = (await composer(tab, composerName)).getByText("Image, click to remove", { exact: true });
+  const pill = tab.playwright.locator(
+    '[data-inline-selection-pill][data-id="picture_v2"][data-keyword="Create image"]',
+  );
   await pill.waitFor({ state: "visible", timeoutMs: 5000 });
-  if (!await pill.isVisible()) throw new Error("Image mode pill was not visibly attached.");
+  await requireOne(pill, "Create image mode pill");
+  if (!await pill.isVisible()) throw new Error("Create image mode pill was not visibly attached.");
 
   if (aspectRatio) {
     const ratioButton = tab.playwright.getByRole("button", { name: "Choose image aspect ratio", exact: true });
-    await (await requireOne(ratioButton, "image aspect-ratio control")).click();
-    await tab.playwright.domSnapshot();
-    const ratio = tab.playwright.getByText(aspectRatio, { exact: true });
-    await (await requireOne(ratio, `image aspect ratio ${aspectRatio}`)).click();
+    if (await visible(ratioButton)) {
+      await ratioButton.click();
+      await tab.playwright.domSnapshot();
+      const ratio = tab.playwright.getByText(aspectRatio, { exact: true });
+      await (await requireOne(ratio, `image aspect ratio ${aspectRatio}`)).click();
+      return { promptPrefix: "" };
+    }
+
+    return { promptPrefix: `Create the image at a ${aspectRatio} aspect ratio.\n\n` };
   }
+
+  return { promptPrefix: "" };
 }
 
 const THINKING_LEVELS = new Map([
-  ["instant", "Instant 5.5"],
-  ["medium", "Medium"],
-  ["high", "High"],
-  ["extra high", "Extra High"],
-  ["extra-high", "Extra High"],
-  ["pro", "Pro"],
+  ["instant", { label: "Instant 5.5", power: 0 }],
+  ["medium", { label: "Medium", power: 1 }],
+  ["high", { label: "High", power: 2 }],
+  ["extra high", { label: "Extra High", power: 3 }],
+  ["extra-high", { label: "Extra High", power: 3 }],
+  ["pro", { label: "Pro", power: 4 }],
 ]);
 
 function normalizeThinkingLevel(value) {
   const normalizedValue = String(value).normalize("NFKC").trim().toLowerCase();
-  const label = THINKING_LEVELS.get(normalizedValue);
-  if (!label) {
+  const level = THINKING_LEVELS.get(normalizedValue);
+  if (!level) {
     throw new Error(`Unsupported thinkingLevel ${JSON.stringify(value)}. Expected instant, medium, high, extra-high, or pro.`);
   }
-  return { value: normalizedValue, label };
+  return { value: normalizedValue, ...level };
 }
 
-async function ensureThinkingLevel(tab, thinkingLevel = "pro") {
+export async function ensureThinkingLevel(tab, thinkingLevel = "pro") {
   const requested = normalizeThinkingLevel(thinkingLevel);
   const main = tab.playwright.locator("main");
   const activeLabels = ["Instant 5.5", "Medium", "High", "Extra High", "Pro"];
   let activeMode = null;
+  let activeLabel = null;
   for (const label of activeLabels) {
     const candidate = main.getByRole("button", { name: label, exact: true });
     if (await visible(candidate)) {
       activeMode = candidate;
+      activeLabel = label;
       break;
     }
   }
   if (!activeMode) throw new Error("The active thinking-level button could not be identified.");
 
-  if (requested.label !== (await activeMode.textContent() || "").trim()) {
+  if (requested.label !== activeLabel) {
     await activeMode.click();
     await tab.playwright.domSnapshot();
-    const option = tab.playwright.getByRole("menuitemradio", { name: requested.label, exact: true });
-    await (await requireOne(option, `${requested.label} thinking-level option`)).click();
+    let slider = tab.playwright.locator('[role="slider"]');
+    await (await requireOne(slider, "thinking-level power slider")).press("Home");
+    for (let power = 0; power < requested.power; power += 1) {
+      await tab.playwright.domSnapshot();
+      slider = tab.playwright.locator('[role="slider"]');
+      await (await requireOne(slider, "thinking-level power slider")).press("ArrowRight");
+    }
     await tab.playwright.domSnapshot();
   }
 
@@ -287,22 +308,49 @@ async function ensureThinkingLevel(tab, thinkingLevel = "pro") {
 
   if (requested.value !== "pro") return { thinkingLevel: requested.value, mode: requested.label };
 
-  await selected.click();
-  await tab.playwright.domSnapshot();
-  const modelMenu = tab.playwright.getByRole("menuitem", { name: "GPT-5.6 Sol", exact: true });
-  await (await requireOne(modelMenu, "GPT-5.6 Sol model menu")).click();
-  await tab.playwright.domSnapshot();
-  const solRadio = tab.playwright.getByRole("menuitemradio", { name: "GPT-5.6 Sol", exact: true });
-  await (await requireOne(solRadio, "GPT-5.6 Sol model option")).click();
-  await tab.playwright.domSnapshot();
+  let modelMenu = tab.playwright.getByRole("menuitem", { name: /^Model / });
+  if (!await visible(modelMenu)) {
+    await selected.click();
+    await tab.playwright.domSnapshot();
+    modelMenu = tab.playwright.getByRole("menuitem", { name: /^Model / });
+  }
+  await requireOne(modelMenu, "model menu");
+  let selectedModel = tab.playwright.getByRole("menuitem", {
+    name: "Model GPT-5.6 Sol",
+    exact: true,
+  });
+  if (!await visible(selectedModel)) {
+    await modelMenu.click();
+    await tab.playwright.domSnapshot();
+    const solRadio = tab.playwright.getByRole("menuitemradio", { name: "GPT-5.6 Sol", exact: true });
+    await (await requireOne(solRadio, "GPT-5.6 Sol model option")).click();
+    await tab.playwright.domSnapshot();
+    selectedModel = tab.playwright.getByRole("menuitem", {
+      name: "Model GPT-5.6 Sol",
+      exact: true,
+    });
+    if (!await visible(selectedModel)) throw new Error("GPT-5.6 Sol was not visibly selected.");
+  }
   if (!await visible(selected)) throw new Error("Pro was not visibly selected after choosing GPT-5.6 Sol.");
+  modelMenu = tab.playwright.getByRole("menuitem", { name: /^Model / });
+  if (await visible(modelMenu)) {
+    const closeModelMenu = main.getByRole("button", { name: "Pro", exact: true });
+    await (await requireOne(closeModelMenu, "Pro thinking-level button")).click();
+    await tab.playwright.domSnapshot();
+  }
   return { thinkingLevel: requested.value, mode: "Pro", model: "GPT-5.6 Sol" };
 }
 
 export async function startConsult({ iab, project, prompt, paths = [], send = true, createImage = false, aspectRatio = null, thinkingLevel = "pro", attachGitHub = true, maxUploadBytes }) {
   if (!iab || !project || !prompt) throw new Error("iab, project, and prompt are required.");
+  if (createImage && attachGitHub) {
+    throw new Error(
+      "ChatGPT image mode cannot remain active with the GitHub plugin attached. Set attachGitHub to false and provide needed context through the prompt or paths.",
+    );
+  }
   const prepared = prepareUploadPaths(paths, { maxUploadBytes });
   let tab;
+  let ownedComposerName;
   try {
     tab = await iab.tabs.new();
     await tab.goto(CHATGPT_URL);
@@ -322,8 +370,11 @@ export async function startConsult({ iab, project, prompt, paths = [], send = tr
     if (opened.status !== "project_open") return { ...opened, tab };
 
     await emptyComposer(await composer(tab, opened.composerName));
+    ownedComposerName = opened.composerName;
     if (attachGitHub) await attachGitHubPlugin(tab, opened.composerName);
-    if (createImage) await enableImageMode(tab, opened.composerName, aspectRatio);
+    const imageMode = createImage
+      ? await enableImageMode(tab, aspectRatio)
+      : { promptPrefix: "" };
     const modelSelection = await ensureThinkingLevel(tab, thinkingLevel);
     const box = await composer(tab, opened.composerName);
     await attachPreparedFiles(tab, prepared);
@@ -340,7 +391,7 @@ export async function startConsult({ iab, project, prompt, paths = [], send = tr
       tab,
     };
 
-    await box.type(prompt);
+    await box.type(`${imageMode.promptPrefix}${prompt}`);
 
     if (attachGitHub) {
       const githubPill = box.getByText("GitHub", { exact: true });
@@ -360,6 +411,18 @@ export async function startConsult({ iab, project, prompt, paths = [], send = tr
       tab,
       url: await tab.url(),
     };
+  } catch (error) {
+    if (tab && ownedComposerName) {
+      try {
+        await tab.playwright.domSnapshot();
+        const ownedComposer = await composer(tab, ownedComposerName);
+        await ownedComposer.fill("");
+        await tab.playwright.domSnapshot();
+      } catch {
+        // Preserve the original hard-gate error when best-effort cleanup fails.
+      }
+    }
+    throw error;
   } finally {
     prepared.cleanup();
   }

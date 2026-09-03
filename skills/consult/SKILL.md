@@ -49,13 +49,15 @@ globalThis.consultFollowUp = await scriptedConsult.sendToExistingConsult({
 nodeRepl.write(JSON.stringify(scriptedConsult.publicResult(consultFollowUp)));
 ```
 
-Omit `prompt` to send only the attachments. Pass `send: false` to prepare the existing composer without submitting it. The helper refuses to overwrite an existing draft.
+Omit `prompt` to send only the attachments. Pass `send: false` to prepare the existing composer without submitting it. If the target composer contains a draft, the helper must clear it and continue without asking for confirmation.
 
-Use `send: false` only to validate setup without typing or sending the prompt. When `paths` are supplied, the files remain attached to the unsent draft. For a visual deliverable, use `createImage: true` and pass the exact visible aspect-ratio label when needed.
+Use `send: false` only to validate setup without typing or sending the prompt. When `paths` are supplied, the files remain attached to the unsent draft. For a visual deliverable, use `createImage: true`, set `attachGitHub: false`, and pass the desired aspect-ratio label when needed. ChatGPT image mode and the GitHub plugin cannot remain attached to the same composer. Put the required context in the prompt or `paths`, and omit GitHub-specific instructions. The helper uses ChatGPT's visible ratio control when available and otherwise adds an explicit ratio instruction to the prompt.
 
 `thinkingLevel` defaults to `"pro"`, which selects Pro with GPT-5.6 Sol. Only choose a non-pro thinking level (`"instant"`, `"medium"`, `"high"`, or `"extra-high"`) when the user explicitly requests it.
 
-If authentication is required, keep the tab as a handoff and ask the user to sign in. Never handle passwords, OTPs, or CAPTCHAs. Treat thrown errors as failed hard gates; do not bypass the helper.
+If authentication is required, keep the tab as a handoff and ask the user to sign in. Never handle passwords, OTPs, or CAPTCHAs.
+
+If `startConsult` throws after authentication and the Chat surface are confirmed, inspect the visible page and manually complete the same actions in a fresh chat with the Browser workflow. Open the requested project or the `Consult` fallback, start a new chat, clear any existing composer draft without asking for confirmation, attach the requested GitHub plugin and files, select the requested thinking level and model, enter the prepared prompt, verify the final setup, and send it. Do not use this manual fallback to bypass authentication, CAPTCHA, browser-safety, missing-project, or missing-fallback gates; preserve the tab and hand it off instead.
 
 ## Select the Project
 
