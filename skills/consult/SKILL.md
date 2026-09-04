@@ -1,6 +1,6 @@
 ---
 name: consult
-description: Use when ChatGPT consultation in the in-app Browser could materially improve hard coding, debugging, design, planning, math, science, research, or reasoning. Runs a guarded helper that opens the matching ChatGPT Project, attaches the GitHub plugin by default, selects Pro with GPT-5.6 Sol, and sends a purpose-built prompt.
+description: Use when ChatGPT consultation in the in-app Browser could materially improve hard coding, debugging, design, planning, math, science, research, or reasoning. Runs a guarded helper that opens the matching ChatGPT Project, attaches the GitHub plugin by default, selects 6 Pro, and sends a purpose-built prompt.
 ---
 
 # Consult
@@ -53,7 +53,7 @@ Omit `prompt` to send only the attachments. Pass `send: false` to prepare the ex
 
 Use `send: false` only to validate setup without typing or sending the prompt. When `paths` are supplied, the files remain attached to the unsent draft. For a visual deliverable, use `createImage: true`, set `attachGitHub: false`, and pass the desired aspect-ratio label when needed. ChatGPT image mode and the GitHub plugin cannot remain attached to the same composer. Put the required context in the prompt or `paths`, and omit GitHub-specific instructions. The helper uses ChatGPT's visible ratio control when available and otherwise adds an explicit ratio instruction to the prompt.
 
-`thinkingLevel` defaults to `"pro"`, which selects Pro with GPT-5.6 Sol. Only choose a non-pro thinking level (`"instant"`, `"medium"`, `"high"`, or `"extra-high"`) when the user explicitly requests it.
+`thinkingLevel` defaults to `"pro"`, which selects the `Latest` Pro model and verifies the visible `6 Pro` composer control. Only choose a non-pro thinking level (`"instant"`, `"medium"`, `"high"`, or `"extra-high"`) when the user explicitly requests it.
 
 If authentication is required, keep the tab as a handoff and ask the user to sign in. Never handle passwords, OTPs, or CAPTCHAs.
 

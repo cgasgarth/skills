@@ -264,7 +264,7 @@ const THINKING_LEVELS = new Map([
   ["high", { label: "High", power: 2 }],
   ["extra high", { label: "Extra High", power: 3 }],
   ["extra-high", { label: "Extra High", power: 3 }],
-  ["pro", { label: "Pro", power: 4 }],
+  ["pro", { label: "6 Pro", power: 4 }],
 ]);
 
 function normalizeThinkingLevel(value) {
@@ -279,20 +279,29 @@ function normalizeThinkingLevel(value) {
 export async function ensureThinkingLevel(tab, thinkingLevel = "pro") {
   const requested = normalizeThinkingLevel(thinkingLevel);
   const main = tab.playwright.locator("main");
-  const activeLabels = ["Instant 5.5", "Medium", "High", "Extra High", "Pro"];
+  const activeLevels = [
+    { value: "instant", name: "Instant 5.5" },
+    { value: "medium", name: "Medium" },
+    { value: "high", name: "High" },
+    { value: "extra-high", name: "Extra High" },
+    { value: "pro", name: /^\d+(?:\.\d+)?\s*Pro$/i },
+  ];
   let activeMode = null;
-  let activeLabel = null;
-  for (const label of activeLabels) {
-    const candidate = main.getByRole("button", { name: label, exact: true });
+  let activeValue = null;
+  for (const level of activeLevels) {
+    const candidate = main.getByRole("button", {
+      name: level.name,
+      ...(typeof level.name === "string" ? { exact: true } : {}),
+    });
     if (await visible(candidate)) {
       activeMode = candidate;
-      activeLabel = label;
+      activeValue = level.value;
       break;
     }
   }
   if (!activeMode) throw new Error("The active thinking-level button could not be identified.");
 
-  if (requested.label !== activeLabel) {
+  if (requested.value !== activeValue) {
     await activeMode.click();
     await tab.playwright.domSnapshot();
     let slider = tab.playwright.locator('[role="slider"]');
@@ -307,7 +316,9 @@ export async function ensureThinkingLevel(tab, thinkingLevel = "pro") {
 
   let effortMenu = tab.playwright.getByRole("menu", { name: "Thinking effort", exact: true });
   if (!await visible(effortMenu)) {
-    const selected = main.getByRole("button", { name: requested.label, exact: true });
+    const selected = requested.value === activeValue
+      ? activeMode
+      : main.getByRole("button", { name: requested.label, exact: true });
     await (await requireOne(selected, `${requested.label} thinking-level button`)).click();
     await tab.playwright.domSnapshot();
     effortMenu = tab.playwright.getByRole("menu", { name: "Thinking effort", exact: true });
@@ -315,14 +326,19 @@ export async function ensureThinkingLevel(tab, thinkingLevel = "pro") {
   await requireOne(effortMenu, "Thinking effort menu");
 
   if (requested.value === "pro") {
-    const solRadio = tab.playwright.getByRole("menuitemradio", { name: "GPT-5.6 Sol", exact: true });
-    await requireOne(solRadio, "GPT-5.6 Sol model option");
-    if (await solRadio.getAttribute("aria-checked") !== "true") {
-      await solRadio.click();
+    const modelPicker = effortMenu.getByRole("menuitem", { name: "Select model", exact: true });
+    await (await requireOne(modelPicker, "Pro model picker")).click();
+    await tab.playwright.domSnapshot();
+    let latestRadio = tab.playwright.getByRole("menuitemradio", { name: "Latest", exact: true });
+    if (!await visible(latestRadio)) {
+      await modelPicker.click();
       await tab.playwright.domSnapshot();
+      latestRadio = tab.playwright.getByRole("menuitemradio", { name: "Latest", exact: true });
     }
-    if (await solRadio.getAttribute("aria-checked") !== "true") {
-      throw new Error("GPT-5.6 Sol was not visibly selected.");
+    await requireOne(latestRadio, "Latest model option");
+    if (await latestRadio.getAttribute("aria-checked") !== "true") {
+      await latestRadio.press("Space");
+      await tab.playwright.domSnapshot();
     }
   }
 
@@ -330,10 +346,11 @@ export async function ensureThinkingLevel(tab, thinkingLevel = "pro") {
   await (await requireOne(closeEffortMenu, "Thinking effort button")).click();
   await tab.playwright.domSnapshot();
   const selected = main.getByRole("button", { name: requested.label, exact: true });
+  await selected.waitFor({ state: "visible", timeoutMs: 5000 });
   if (!await visible(selected)) throw new Error(`${requested.label} was not visibly selected.`);
 
   if (requested.value !== "pro") return { thinkingLevel: requested.value, mode: requested.label };
-  return { thinkingLevel: requested.value, mode: "Pro", model: "GPT-5.6 Sol" };
+  return { thinkingLevel: requested.value, mode: "Pro", model: "GPT-6" };
 }
 
 export async function startConsult({ iab, project, prompt, paths = [], send = true, createImage = false, aspectRatio = null, thinkingLevel = "pro", attachGitHub = true, maxUploadBytes }) {

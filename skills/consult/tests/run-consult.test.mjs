@@ -274,22 +274,29 @@ describe("startConsult", () => {
 });
 
 describe("ensureThinkingLevel", () => {
-  it("selects Pro with the power slider and verifies GPT-5.6 Sol", async () => {
-    let activeLabel = "High";
+  it("changes an alternate Pro model to 6 Pro and verifies Latest", async () => {
+    let activeLabel = "5.6 Pro";
     let menuOpen = false;
-    let power = 2;
-    let solSelected = false;
+    let modelMenuOpen = false;
+    let power = 4;
+    let powerChanges = 0;
+    let latestSelected = false;
     const button = (label) => ({
       async click() {
         menuOpen = !menuOpen;
       },
       async count() {
         if (label === "Thinking effort") return menuOpen ? 1 : 0;
-        return activeLabel === label ? 1 : 0;
+        return (label instanceof RegExp ? label.test(activeLabel) : activeLabel === label) ? 1 : 0;
       },
       async isVisible() {
         if (label === "Thinking effort") return menuOpen;
-        return activeLabel === label;
+        return label instanceof RegExp ? label.test(activeLabel) : activeLabel === label;
+      },
+      async waitFor() {
+        if (!(label instanceof RegExp ? label.test(activeLabel) : activeLabel === label)) {
+          throw new Error(`${String(label)} not visible`);
+        }
       },
     });
     const main = {
@@ -304,9 +311,10 @@ describe("ensureThinkingLevel", () => {
       },
       async press(key) {
         expect(menuOpen).toBe(true);
+        powerChanges += 1;
         if (key === "Home") power = 0;
         if (key === "ArrowRight") power += 1;
-        activeLabel = ["Instant 5.5", "Medium", "High", "Extra High", "Pro"][power];
+        activeLabel = ["Instant 5.5", "Medium", "High", "Extra High", "6 Pro"][power];
       },
     };
     const effortMenu = {
@@ -316,16 +324,34 @@ describe("ensureThinkingLevel", () => {
       async isVisible() {
         return menuOpen;
       },
-    };
-    const solRadio = {
-      async click() {
-        solSelected = true;
+      getByRole(role, options) {
+        expect(role).toBe("menuitem");
+        expect(options).toEqual({ name: "Select model", exact: true });
+        return {
+          async click() {
+            modelMenuOpen = true;
+          },
+          async count() {
+            return menuOpen ? 1 : 0;
+          },
+        };
       },
+    };
+    const latestRadio = {
       async count() {
-        return menuOpen ? 1 : 0;
+        return menuOpen && modelMenuOpen ? 1 : 0;
       },
       async getAttribute(name) {
-        return name === "aria-checked" && solSelected ? "true" : "false";
+        return name === "aria-checked" && latestSelected ? "true" : "false";
+      },
+      async isVisible() {
+        return menuOpen && modelMenuOpen;
+      },
+      async press(key) {
+        expect(key).toBe("Space");
+        latestSelected = true;
+        activeLabel = "6 Pro";
+        modelMenuOpen = false;
       },
     };
     const tab = {
@@ -342,8 +368,8 @@ describe("ensureThinkingLevel", () => {
             return effortMenu;
           }
           expect(role).toBe("menuitemradio");
-          expect(options).toEqual({ name: "GPT-5.6 Sol", exact: true });
-          return solRadio;
+          expect(options).toEqual({ name: "Latest", exact: true });
+          return latestRadio;
         },
       },
     };
@@ -351,13 +377,15 @@ describe("ensureThinkingLevel", () => {
     expect(await ensureThinkingLevel(tab, "pro")).toEqual({
       thinkingLevel: "pro",
       mode: "Pro",
-      model: "GPT-5.6 Sol",
+      model: "GPT-6",
     });
-    expect({ activeLabel, menuOpen, power, solSelected }).toEqual({
-      activeLabel: "Pro",
+    expect({ activeLabel, latestSelected, menuOpen, modelMenuOpen, power, powerChanges }).toEqual({
+      activeLabel: "6 Pro",
+      latestSelected: true,
       menuOpen: false,
+      modelMenuOpen: false,
       power: 4,
-      solSelected: true,
+      powerChanges: 0,
     });
   });
 });
