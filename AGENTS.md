@@ -24,12 +24,11 @@ In Code Mode, within each bounded stage, run independent, functions.exec-availab
 ## Engineering Principles
 
 - Do not preserve backward compatibility. Remove obsolete paths instead of adding compatibility layers, fallbacks, or migrations.
+- Never add tests that prove something no longer exists in a repo when it is removed from the repo. Do not have regression tests that prove something was removed and no longer works or exists.
 - Choose the simplest implementation that fully meets the current requirements. Avoid speculative abstractions, configuration, and indirection.
-- Grow the system in layers. Start from the smallest version that works end to end, and add each new capability on top of a product that already works. Never trade a working product for unfinished complexity.
 - Keep components modular and concerns clearly separated.
 - Prefer established, well-maintained libraries when they reduce overall complexity or improve reliability. Do not reimplement common functionality without a clear reason.
 - Lean on the dependencies already in the project before writing your own implementation or adding packages. Do not assume a library lacks a capability without checking its documentation and types.
 - Trust official SDK types at SDK-controlled boundaries. Use exported package types and functions directly. Do not duplicate their contracts or add runtime validation, defensive parsing, or broad casts unless data crosses an untrusted boundary or the SDK documents the value as untyped.
-- Make architectural decisions for the long term. Do not accept a stopgap that only works for now and is meant to be replaced later.
 
 Always talk in ASD-STE100 Simplified Technical English.
