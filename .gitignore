@@ -1,4 +1,4 @@
-# Ignore the live Codex home except for personal instructions and skills.
+# Ignore live Codex data except for selected source and configuration files.
 *
 !.gitignore
 !AGENTS.md
@@ -9,3 +9,10 @@
 !skills/consult/**
 !skills/typescript-lsp/
 !skills/typescript-lsp/**
+
+# Idle compaction source; logs and runtime state remain ignored.
+!idle-compact/
+!idle-compact/*.ts
+!idle-compact/README.md
+!idle-compact/*.plist
+!model-catalog.json
