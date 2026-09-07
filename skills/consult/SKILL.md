@@ -109,6 +109,8 @@ Preserve the user's intent and do not broaden external mutations without authori
 
 The helper ends immediately after sending and must not poll, refresh, extract the response, or click `Answer now`. Preserve its live tab and URL.
 
-When the task requires ChatGPT's answer, wait outside the helper through the normal Browser workflow. Pro can be slow: do not treat it as slow before 30 minutes; refresh and verify progress at 40 minutes and again at one hour. Never invoke `Answer now` or stop a response merely because it is slow.
+When the task requires ChatGPT's answer, do not poll the output or run a foreground sleep/check loop. Set or reuse a five-minute heartbeat timer on the current Codex task through the automation tool, then end the turn. Save the consultation URL and the expected response in the timer prompt. Check the response once per timer wake-up through the normal Browser workflow; do not check between wake-ups. Stay quiet while the response is unchanged or still running. When it finishes, read and evaluate it, report the result on the current task, and pause the timer. Report any blocker that needs user action and pause the timer rather than repeating the same blocked check. If task timers are unavailable, preserve the tab and report that automatic checking could not be set up; do not substitute a polling loop.
+
+Pro can be slow: do not treat it as slow before 30 minutes. If it is still running, refresh and verify progress on the scheduled checks at 40 minutes and one hour. Never invoke `Answer now` or stop a response merely because it is slow.
 
 Use `sendToExistingConsult` for same-topic follow-ups in the current ChatGPT thread. Start a new consultation for a new topic. Synthesize and evaluate returned advice, and independently verify any GitHub mutations.

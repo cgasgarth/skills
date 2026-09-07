@@ -5,11 +5,11 @@
 - For repeated noisy commands, prefer compact wrappers or summary modes so unchanged success output stays small.
 - Installed CLIs include `sr`, `sg` (`ast-grep`), `rg`, `git`, `gh`, `bun`, `bunx`, `uv`, and `uvx`; use them where useful to improve efficiency, productivity, and output quality.
 - For inline one-off JavaScript or TypeScript commands, prefer `bun` or `bunx` over `node` or `npx` when available.
+- Prefer bun + javascript / typescript for one off commands over python
 
 ## Python tooling
 
 - Use the uv ecosystem for Python versions, environments, dependencies, tools, and commands.
-- For projects, prefer `uv add`, `uv remove`, `uv sync`, `uv lock`, and `uv run`. Keep dependencies in `pyproject.toml` and commit `uv.lock` when the project uses a lockfile.
 - For one-off dependencies and tools, prefer `uv run --with <package>` and `uvx <tool>`.
 - For Python versions and virtual environments, prefer `uv python` and `uv venv`. Use uv-managed Python for new environments.
 - Do not use `pip`, `pip3`, `python -m pip`, `pipx`, or Homebrew to install Python interpreters, libraries, or Python CLI tools unless the user explicitly requests it or uv cannot support the requirement. If uv cannot support it, explain why before using another installer.
