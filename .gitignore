@@ -7,6 +7,8 @@
 !skills/amazon-support-browser/**
 !skills/consult/
 !skills/consult/**
+!skills/put-chat-to-work/
+!skills/put-chat-to-work/README.md
 !skills/typescript-lsp/
 !skills/typescript-lsp/**
 
