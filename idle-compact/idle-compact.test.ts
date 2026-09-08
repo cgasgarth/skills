@@ -71,9 +71,9 @@ test('context threshold uses latest request and skips unknown usage', async () =
   const path = join(dir, 'rollout.jsonl');
   const event = (tokens: number) => JSON.stringify({ type: 'event_msg', payload: { type: 'token_count', info: { total_token_usage: { total_tokens: 900_000 }, last_token_usage: { total_tokens: tokens } } } });
   try {
-    for (const tokens of [100, 45_000, 45_001]) {
+    for (const tokens of [100, 99_999, 100_000, 100_001]) {
       await Bun.write(path, event(80_000) + '\n' + event(tokens) + '\n');
-      expect(await contextAboveMinimum(path)).toBe(tokens > 45_000);
+      expect(await contextAboveMinimum(path)).toBe(tokens > 100_000);
     }
     await Bun.write(path, '{}\n');
     expect(await contextAboveMinimum(path)).toBe(false);

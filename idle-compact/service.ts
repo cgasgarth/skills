@@ -67,7 +67,7 @@ if (process.argv.includes('--check')) {
     log('database and desktop IPC checks passed; no compaction sent');
   } finally { ipc.close(); }
 } else {
-  log('started; idle=25m, dispatch cutoff=29m, recent=24h, poll=60s, context>45000');
+  log('started; idle=25m, dispatch cutoff=29m, recent=24h, poll=60s, context>100000');
   let lastError = '';
   while (true) {
     try { await tick(); lastError = ''; }

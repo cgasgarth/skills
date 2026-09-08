@@ -7,7 +7,7 @@ Codex tasks. All files are stored in `/Users/cgas/.codex/idle-compact/`.
 
 - Checks local task databases read-only once per minute. Checks use no model tokens.
 - Considers tasks completed within the last 24 hours, after installation.
-- Requires more than 45,000 tokens in the latest request usage (input plus output),
+- Requires more than 100,000 tokens in the latest request usage (input plus output),
   not cumulative task usage. Missing or unreadable usage is skipped.
 - Compacts after 25 idle minutes, normally at 25–26 minutes. Skips after 29 minutes.
 - Skips active, failed, interrupted, archived, and subagent tasks, queued work,

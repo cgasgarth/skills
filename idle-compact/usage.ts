@@ -1,7 +1,7 @@
 import { createReadStream } from 'node:fs';
 import { createInterface } from 'node:readline';
 
-export const MIN_CONTEXT_TOKENS = 45_000;
+export const MIN_CONTEXT_TOKENS = 100_000;
 
 // Use the latest request size, not cumulative usage across the task.
 export async function contextAboveMinimum(path: string): Promise<boolean> {
