@@ -11,13 +11,13 @@ Use `scripts/run-consult.mjs` to start a fresh ChatGPT consultation. The helper 
 
 ## Run the Helper
 
-Read and follow the installed Browser skill. Bind the persistent in-app browser as `iab`; do not use Chrome, standalone Playwright, Selenium, or another browser profile.
+Use the Computer Use JavaScript session (`mcp__cua_repl.js`) and read its returned browser documentation. Bind the in-app browser with `var iab = await cua.getBrowser({ id: "iab" });`. Do not use Chrome, standalone Playwright, Selenium, or another browser profile.
 
 Import and run the helper through the Browser JavaScript session:
 
 ```js
 var scriptedConsult = await import("<skill-dir>/scripts/run-consult.mjs");
-globalThis.consultSession = await scriptedConsult.startConsult({
+var consultSession = await scriptedConsult.startConsult({
   iab,
   project: "<project>",
   prompt: "<prompt>",
@@ -40,7 +40,7 @@ ChatGPT exposes separate `Chat` and `Work` surfaces. When starting a new consult
 To add files or an optional follow-up prompt to the already-open consultation, reuse the session instead of starting a new thread:
 
 ```js
-globalThis.consultFollowUp = await scriptedConsult.sendToExistingConsult({
+var consultFollowUp = await scriptedConsult.sendToExistingConsult({
   session: consultSession,
   paths: ["/full/system/path/to/file-or-folder"],
   prompt: "<optional follow-up prompt>",

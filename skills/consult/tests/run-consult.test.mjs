@@ -249,6 +249,15 @@ describe("enableImageMode", () => {
 });
 
 describe("startConsult", () => {
+  it("rejects an invalid thinking level before opening a tab or preparing files", async () => {
+    let opened = false;
+    await expect(startConsult({
+      iab: { tabs: { async new() { opened = true; } } },
+      project: "Consult", prompt: "Test", thinkingLevel: "invalid",
+      paths: ["relative-path"],
+    })).rejects.toThrow("Unsupported thinkingLevel");
+    expect(opened).toBe(false);
+  });
   it("rejects incompatible GitHub and image modes before opening a tab", async () => {
     let openedTabs = 0;
     const iab = {
@@ -274,8 +283,8 @@ describe("startConsult", () => {
 });
 
 describe("ensureThinkingLevel", () => {
-  it("changes an alternate Pro model to 6 Pro and verifies Latest", async () => {
-    let activeLabel = "5.6 Pro";
+  function thinkingTab(initialLabel = "5.6 Pro") {
+    let activeLabel = initialLabel;
     let menuOpen = false;
     let modelMenuOpen = false;
     let power = 4;
@@ -314,7 +323,7 @@ describe("ensureThinkingLevel", () => {
         powerChanges += 1;
         if (key === "Home") power = 0;
         if (key === "ArrowRight") power += 1;
-        activeLabel = ["Instant 5.5", "Medium", "High", "Extra High", "6 Pro"][power];
+        activeLabel = ["Instant", "Medium", "High", "Extra High", "6 Pro"][power];
       },
     };
     const effortMenu = {
@@ -374,12 +383,29 @@ describe("ensureThinkingLevel", () => {
       },
     };
 
+    return { tab, state: () => ({ activeLabel, latestSelected, menuOpen, modelMenuOpen, power, powerChanges }) };
+  }
+
+  for (const initial of ["Instant", "Medium", "High", "Extra High", "6 Pro"]) {
+    for (const [level, label] of [["instant", "Instant"], ["medium", "Medium"], ["high", "High"], ["extra-high", "Extra High"], ["pro", "6 Pro"], [" Extra High ", "Extra High"]]) {
+      it(`selects ${level} from ${initial}`, async () => {
+        const fixture = thinkingTab(initial);
+        const result = await ensureThinkingLevel(fixture.tab, level);
+        expect(result.thinkingLevel).toBe(level.trim().toLowerCase().replace(" ", "-"));
+        expect(fixture.state().activeLabel).toBe(label);
+        expect(fixture.state().menuOpen).toBe(false);
+      });
+    }
+  }
+
+  it("changes an alternate Pro model to 6 Pro and verifies Latest", async () => {
+    const {tab, state} = thinkingTab();
     expect(await ensureThinkingLevel(tab, "pro")).toEqual({
       thinkingLevel: "pro",
       mode: "Pro",
       model: "GPT-6",
     });
-    expect({ activeLabel, latestSelected, menuOpen, modelMenuOpen, power, powerChanges }).toEqual({
+    expect(state()).toEqual({
       activeLabel: "6 Pro",
       latestSelected: true,
       menuOpen: false,

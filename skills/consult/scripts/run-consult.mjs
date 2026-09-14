@@ -259,7 +259,7 @@ export async function enableImageMode(tab, aspectRatio) {
 }
 
 const THINKING_LEVELS = new Map([
-  ["instant", { label: "Instant 5.5", power: 0 }],
+  ["instant", { label: "Instant", power: 0 }],
   ["medium", { label: "Medium", power: 1 }],
   ["high", { label: "High", power: 2 }],
   ["extra high", { label: "Extra High", power: 3 }],
@@ -273,14 +273,14 @@ function normalizeThinkingLevel(value) {
   if (!level) {
     throw new Error(`Unsupported thinkingLevel ${JSON.stringify(value)}. Expected instant, medium, high, extra-high, or pro.`);
   }
-  return { value: normalizedValue, ...level };
+  return { value: normalizedValue === "extra high" ? "extra-high" : normalizedValue, ...level };
 }
 
 export async function ensureThinkingLevel(tab, thinkingLevel = "pro") {
   const requested = normalizeThinkingLevel(thinkingLevel);
   const main = tab.playwright.locator("main");
   const activeLevels = [
-    { value: "instant", name: "Instant 5.5" },
+    { value: "instant", name: "Instant" },
     { value: "medium", name: "Medium" },
     { value: "high", name: "High" },
     { value: "extra-high", name: "Extra High" },
@@ -360,6 +360,7 @@ export async function startConsult({ iab, project, prompt, paths = [], send = tr
       "ChatGPT image mode cannot remain active with the GitHub plugin attached. Set attachGitHub to false and provide needed context through the prompt or paths.",
     );
   }
+  thinkingLevel = normalizeThinkingLevel(thinkingLevel).value;
   const prepared = prepareUploadPaths(paths, { maxUploadBytes });
   let tab;
   let ownedComposerName;
@@ -410,6 +411,7 @@ export async function startConsult({ iab, project, prompt, paths = [], send = tr
       if (!await visible(githubPill)) throw new Error("GitHub pill was not visible immediately before send.");
     }
     await sendCurrentComposer(tab);
+    await tab.playwright.waitForURL("**/c/**", { timeoutMs: 15000 });
 
     return {
       status: "sent",
