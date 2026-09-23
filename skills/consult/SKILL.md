@@ -1,6 +1,6 @@
 ---
 name: consult
-description: Use when ChatGPT consultation in the in-app Browser could materially improve hard coding, debugging, design, planning, math, science, research, or reasoning. Runs a guarded helper that opens the matching ChatGPT Project, attaches the GitHub plugin by default, selects 6 Pro, and sends a purpose-built prompt.
+description: Use when ChatGPT consultation could materially improve hard coding, debugging, design, planning, math, science, research, or reasoning. Starts a guarded 6 Pro chat in the in-app Browser and reads its answer through the Codex app when available.
 ---
 
 # Consult
@@ -109,8 +109,12 @@ Preserve the user's intent and do not broaden external mutations without authori
 
 The helper ends immediately after sending and must not poll, refresh, extract the response, or click `Answer now`. Preserve its live tab and URL.
 
-When the task requires ChatGPT's answer, do not poll the output or run a foreground sleep/check loop. Set or reuse a five-minute heartbeat timer on the current Codex task through the automation tool, then end the turn. Save the consultation URL and the expected response in the timer prompt. Check the response once per timer wake-up through the normal Browser workflow; do not check between wake-ups. Stay quiet while the response is unchanged or still running. When it finishes, read and evaluate it, report the result on the current task, and pause the timer. Report any blocker that needs user action and pause the timer rather than repeating the same blocked check. If task timers are unavailable, preserve the tab and report that automatic checking could not be set up; do not substitute a polling loop.
+When the task requires ChatGPT's answer, do not poll the output or run a foreground sleep/check loop. Set or reuse a five-minute heartbeat timer on the current Codex task through the automation tool, then end the turn. Save the consultation URL and the expected response in the timer prompt. Check once per timer wake-up; do not check between wake-ups.
 
-Pro can be slow: do not treat it as slow before 30 minutes. If it is still running, refresh and verify progress on the scheduled checks at 40 minutes and one hour. Never invoke `Answer now` or stop a response merely because it is slow.
+Use the Codex app's read-only `mcp__codex_app__read_thread` first when available. The conversation ID is the final `/c/<id>` segment of the helper's URL. Call `read_thread` with that `threadId`, a small `turnLimit`, and `maxOutputCharsPerItem: 20000` (the tool's maximum). ChatGPT conversations appear as `kind: "chatgpt"`; a finished answer is an assistant `agentMessage` in a completed turn. An idle thread or a completed turn containing only a `userMessage` does **not** prove the answer is ready. If the helper did not return a conversation URL, use `mcp__codex_app__list_threads` to identify the recent ChatGPT chat by project and prompt before reading it; do not rely on a title alone.
+
+`read_thread` can mark a long `agentMessage` as `truncated: true`. Use the normal in-app Browser workflow only when the app tool is unavailable, cannot identify the chat, or omits text needed to evaluate the answer. Do not claim to have read a truncated answer in full. Browser authentication and CAPTCHA handoff rules still apply; never solve a CAPTCHA. Stay quiet while the answer is absent or still running. When it finishes, evaluate it, report the result on the current task, and pause the timer. If the user has paused the underlying goal, notify them that the answer is ready without resuming goal work until they resume it. Report a blocker that needs user action once and pause the timer rather than repeating the same blocked check. If task timers are unavailable, preserve the tab and report that automatic checking could not be set up; do not substitute a polling loop.
+
+Pro can be slow: do not treat it as slow before 30 minutes. At 40 minutes and one hour, verify progress on the scheduled app checks; use the Browser only if the app result is ambiguous and the page is accessible. Never invoke `Answer now` or stop a response merely because it is slow.
 
 Use `sendToExistingConsult` for same-topic follow-ups in the current ChatGPT thread. Start a new consultation for a new topic. Synthesize and evaluate returned advice, and independently verify any GitHub mutations.
