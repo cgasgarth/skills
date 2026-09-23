@@ -69,7 +69,7 @@ update_router() {
   uv tool install \
     --python 3.13 \
     --managed-python \
-    --prerelease disallow \
+    --prerelease-package codex-lb=allow \
     --upgrade \
     'codex-lb@latest'
 }
